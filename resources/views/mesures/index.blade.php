@@ -116,44 +116,40 @@
                             cliquez sur une icône pour l'ajouter, cliquez encore pour la retirer.
                         </p>
 
-                        {{-- Palette d'icônes --}}
-                        <div class="space-y-4">
-                            @foreach ($catalogue as $zone => $entrees)
-                                <fieldset>
-                                    <legend class="text-xs font-medium tracking-wide text-brand-600 uppercase dark:text-brand-300">
-                                        {{ $zone }}
-                                    </legend>
+                        {{--
+                            Palette d'icônes : une grille plate, sans les intitulés
+                            de zone qui alourdissaient la lecture sur téléphone. Le
+                            regroupement par zone du corps est détaillé dans
+                            l'encart « Catalogue des mesures », à droite.
+                        --}}
+                        <div class="grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-4">
+                            @foreach ($catalogueParCode as $code => $entree)
+                                {{--
+                                    Les couleurs de la tuile sont entièrement pilotées par
+                                    Alpine : la classe statique ne porte que la mise en page.
+                                    Mélanger les deux ferait dépendre l'état retenu de
+                                    l'ordre d'émission des utilitaires Tailwind.
+                                --}}
+                                <button
+                                    type="button"
+                                    class="flex min-h-16 flex-col items-center justify-center gap-1.5 rounded-xl border px-2 py-2.5 text-center transition focus-visible:ring-2 focus-visible:ring-brand-accent focus-visible:ring-offset-1 focus-visible:outline-none dark:focus-visible:ring-offset-brand-dark"
+                                    x-on:click="basculer(@js($code))"
+                                    x-bind:aria-pressed="contient(@js($code)) ? 'true' : 'false'"
+                                    x-bind:class="contient(@js($code))
+                                        ? 'border-brand-accent bg-brand-accent/10'
+                                        : 'border-brand-200 bg-white hover:border-brand-400 hover:bg-brand-50 dark:border-white/10 dark:bg-white/5 dark:hover:border-brand-500/60'"
+                                    title="{{ $entree['zone'] }} — {{ $entree['libelle'] }}"
+                                >
+                                    <i
+                                        class="fa-solid {{ $entree['icone'] }} text-lg"
+                                        :class="contient(@js($code)) ? 'text-brand-accent' : 'text-brand-500 dark:text-brand-300'"
+                                        aria-hidden="true"
+                                    ></i>
 
-                                    <div class="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-4">
-                                        @foreach ($entrees as $entree)
-                                            {{--
-                                                Les couleurs de la tuile sont entièrement pilotées par
-                                                Alpine : la classe statique ne porte que la mise en page.
-                                                Mélanger les deux ferait dépendre l'état retenu de
-                                                l'ordre d'émission des utilitaires Tailwind.
-                                            --}}
-                                            <button
-                                                type="button"
-                                                class="flex min-h-16 flex-col items-center justify-center gap-1.5 rounded-xl border px-2 py-2.5 text-center transition focus-visible:ring-2 focus-visible:ring-brand-accent focus-visible:ring-offset-1 focus-visible:outline-none dark:focus-visible:ring-offset-brand-dark"
-                                                x-on:click="basculer(@js($entree['code']))"
-                                                x-bind:aria-pressed="contient(@js($entree['code'])) ? 'true' : 'false'"
-                                                x-bind:class="contient(@js($entree['code']))
-                                                    ? 'border-brand-accent bg-brand-accent/10'
-                                                    : 'border-brand-200 bg-white hover:border-brand-400 hover:bg-brand-50 dark:border-white/10 dark:bg-white/5 dark:hover:border-brand-500/60'"
-                                            >
-                                                <i
-                                                    class="fa-solid {{ $entree['icone'] }} text-lg"
-                                                    :class="contient(@js($entree['code'])) ? 'text-brand-accent' : 'text-brand-500 dark:text-brand-300'"
-                                                    aria-hidden="true"
-                                                ></i>
-
-                                                <span class="text-[0.7rem] leading-tight font-medium text-brand-800 dark:text-brand-100">
-                                                    {{ $entree['libelle'] }}
-                                                </span>
-                                            </button>
-                                        @endforeach
-                                    </div>
-                                </fieldset>
+                                    <span class="text-[0.7rem] leading-tight font-medium text-brand-800 dark:text-brand-100">
+                                        {{ $entree['libelle'] }}
+                                    </span>
+                                </button>
                             @endforeach
                         </div>
 
@@ -787,37 +783,64 @@
             </section>
 
             {{-- Rappel des mesures du catalogue --}}
-            <section class="cf-card overflow-hidden">
-                <div class="cf-card-header">
-                    <h2 class="font-serif text-lg font-semibold">Catalogue des mesures</h2>
-                    <span class="text-xs text-brand-500 dark:text-brand-400">
-                        <span class="font-semibold tabular-nums">{{ count($catalogueParCode) }}</span>
-                        mesures
-                    </span>
-                </div>
+            {{--
+                Le regroupement par zone du corps, retiré de la palette pour
+                l'alléger, est détaillé ici. L'encart est replié par défaut et
+                s'ouvre au clic : la palette reste l'outil principal, la
+                légende reste consultable quand on cherche une mesure.
+            --}}
+            <section class="cf-card overflow-hidden" x-data="{ ouvert: false }">
+                <h2>
+                    <button
+                        type="button"
+                        class="cf-card-header w-full cursor-pointer appearance-none text-left hover:bg-brand-50/60 dark:hover:bg-white/5"
+                        x-on:click="ouvert = !ouvert"
+                        aria-controls="catalogue-mesures"
+                        x-bind:aria-expanded="ouvert ? 'true' : 'false'"
+                    >
+                        <span class="font-serif text-lg font-semibold">Catalogue des mesures</span>
 
-                <div class="space-y-3 p-5">
-                    <p class="text-xs text-brand-600 dark:text-brand-300">
-                        {{ count($catalogue) }} zones du corps, toutes facultatives. Utilisez la palette
-                        ci-dessus pour composer votre relevé.
-                    </p>
+                        <span class="flex items-center gap-2 text-xs text-brand-500 dark:text-brand-400">
+                            <span class="tabular-nums">
+                                <span class="font-semibold">{{ count($catalogueParCode) }}</span>
+                                mesures ·
+                                <span class="font-semibold">{{ count($catalogue) }}</span>
+                                zones
+                            </span>
 
-                    @foreach ($catalogue as $zone => $entrees)
-                        <div>
-                            <p class="text-xs font-medium tracking-wide text-brand-600 uppercase dark:text-brand-300">
-                                {{ $zone }}
-                            </p>
+                            <i
+                                class="fa-solid fa-chevron-down text-[0.65rem] transition-transform"
+                                x-bind:class="ouvert ? 'rotate-180' : ''"
+                                aria-hidden="true"
+                            ></i>
+                        </span>
+                    </button>
+                </h2>
 
-                            <ul class="mt-1.5 flex flex-wrap gap-1.5">
-                                @foreach ($entrees as $entree)
-                                    <li class="inline-flex items-center gap-1.5 rounded-lg border border-brand-200 px-2 py-1 text-xs text-brand-700 dark:border-white/10 dark:text-brand-200">
-                                        <i class="fa-solid {{ $entree['icone'] }} text-brand-500 dark:text-brand-300" aria-hidden="true"></i>
-                                        {{ $entree['libelle'] }}
-                                    </li>
-                                @endforeach
-                            </ul>
-                        </div>
-                    @endforeach
+                <div id="catalogue-mesures" x-show="ouvert" x-cloak>
+                    <div class="space-y-3 border-t border-brand-200/70 p-5 dark:border-white/10">
+                        <p class="text-xs text-brand-600 dark:text-brand-300">
+                            Toutes ces mesures sont facultatives. Touchez une icône de la palette
+                            pour l'ajouter à votre relevé, et encore une fois pour la retirer.
+                        </p>
+
+                        @foreach ($catalogue as $zone => $entrees)
+                            <div>
+                                <p class="text-xs font-medium tracking-wide text-brand-600 uppercase dark:text-brand-300">
+                                    {{ $zone }}
+                                </p>
+
+                                <ul class="mt-1.5 flex flex-wrap gap-1.5">
+                                    @foreach ($entrees as $entree)
+                                        <li class="inline-flex items-center gap-1.5 rounded-lg border border-brand-200 px-2 py-1 text-xs text-brand-700 dark:border-white/10 dark:text-brand-200">
+                                            <i class="fa-solid {{ $entree['icone'] }} text-brand-500 dark:text-brand-300" aria-hidden="true"></i>
+                                            {{ $entree['libelle'] }}
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        @endforeach
+                    </div>
                 </div>
             </section>
         </aside>

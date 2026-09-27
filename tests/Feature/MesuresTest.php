@@ -76,11 +76,36 @@ class MesuresTest extends TestCase
             ->assertSee('Choisissez les mesures que vous allez prendre');
     }
 
-    public function test_le_catalogue_expose_les_trois_zones_du_corps(): void
+    public function test_la_palette_est_une_grille_plate_sans_intitule_de_zone(): void
+    {
+        $response = $this->actingAs($this->atelier)->get(route('mesures.index', $this->client));
+
+        $response->assertOk();
+
+        $html = (string) $response->getContent();
+
+        /*
+         * Les tuiles sont dans une grille unique : plus de <fieldset> ni de
+         * <legend> par zone, qui alourdissaient la lecture sur téléphone. Le
+         * total des tuiles reste bien celui du catalogue.
+         */
+        $this->assertStringNotContainsString('<fieldset', $html);
+        $this->assertStringNotContainsString('<legend', $html);
+
+        // Le code est un littéral dans la palette, une variable dans le
+        // bouton « Retirer » : le guillemet droit les distingue.
+        $this->assertSame(23, substr_count($html, 'x-on:click="basculer(\''));
+    }
+
+    public function test_le_regroupement_par_zone_est_dans_un_encart_repliable(): void
     {
         $this->actingAs($this->atelier)
             ->get(route('mesures.index', $this->client))
             ->assertOk()
+            ->assertSee('Catalogue des mesures')
+            ->assertSee('aria-controls="catalogue-mesures"', false)
+            ->assertSee('x-bind:aria-expanded', false)
+            ->assertSee('x-data="{ ouvert: false }"', false)
             ->assertSee('Haut du corps')
             ->assertSee('Longueurs')
             ->assertSee('Bas du corps');
