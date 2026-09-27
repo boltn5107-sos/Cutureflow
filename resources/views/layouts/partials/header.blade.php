@@ -19,6 +19,15 @@
         </div>
     </div>
 
+    <button
+        type="button"
+        class="ml-auto flex size-9 items-center justify-center rounded-lg text-brand-700 transition hover:bg-brand-100/70 dark:text-brand-200 dark:hover:bg-white/10 lg:hidden"
+        aria-label="Menu principal"
+        x-on:click="menu = !menu"
+    >
+        <i class="fa-solid fa-bars text-sm" aria-hidden="true"></i>
+    </button>
+
     <div class="ml-auto flex items-center gap-1.5 sm:gap-2">
         <button
             type="button"

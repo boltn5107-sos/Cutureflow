@@ -169,7 +169,7 @@
                             </div>
                         </div>
 
-                        <p class="mt-4 flex items-start gap-2 text-sm text-brand-700 dark:text-brand-200">
+<p class="text-xs font-semibold tracking-wide text-brand-700 uppercase dark:text-brand-200">
                             <i class="fa-solid fa-circle-info mt-0.5" aria-hidden="true"></i>
                             Versez au numéro <strong class="font-semibold">{{ $wave['number'] }}</strong>
                             au nom de <strong class="font-semibold">{{ $wave['name'] }}</strong>,

@@ -55,16 +55,16 @@
                         Régularisez votre abonnement mensuel en effectuant le paiement Wave ci-dessous, puis
                         transmettez votre nouveau reçu pour demander le déblocage.
                     </p>
-                    <div class="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center">
-                        <div class="flex items-center gap-2.5 rounded-lg bg-brand-100 px-3.5 py-2.5 dark:bg-white/10">
-                            <i class="fa-solid fa-mobile-screen text-brand-600 dark:text-brand-200" aria-hidden="true"></i>
-                            <span class="text-sm font-semibold tabular-nums">{{ $wave['number'] }}</span>
+                        <div class="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center">
+                            <div class="flex items-center gap-2.5 rounded-lg bg-brand-100 px-3.5 py-2.5 dark:bg-white/10">
+                                <i class="fa-solid fa-mobile-screen text-brand-600 dark:text-brand-200" aria-hidden="true"></i>
+                                <span class="text-sm font-semibold tabular-nums">{{ $wave['number'] }}</span>
+                            </div>
+                            <a href="{{ route('abonnement.index') }}" class="cf-btn-accent flex-1">
+                                <i class="fa-solid fa-cloud-arrow-up" aria-hidden="true"></i>
+                                Régulariser
+                            </a>
                         </div>
-                        <a href="{{ route('abonnement.index') }}" class="cf-btn-accent flex-1">
-                            <i class="fa-solid fa-cloud-arrow-up" aria-hidden="true"></i>
-                            Régulariser
-                        </a>
-                    </div>
                 @else
                     <p class="mt-1.5 text-sm text-brand-600 dark:text-brand-300">
                         Votre inscription n'a pas pu être acceptée. Vérifiez la preuve de paiement transmise et
