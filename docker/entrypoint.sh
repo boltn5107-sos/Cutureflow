@@ -42,6 +42,49 @@ APP_DIR=/var/www/html
 cd "$APP_DIR"
 
 # --------------------------------------------------------------------------
+# 0. Clé d'application
+#
+#    Le chiffrement utilise AES-256-CBC, qui exige une clé de 32 octets
+#    exactement. Laravel ne décode la valeur que si elle commence par
+#    « base64: » : une base64 collée sans ce préfixe est prise telle quelle
+#    et fait échouer chaque requête avec un « Unsupported cipher » que rien
+#    n'explique. Le contrôle ci-dessous transforme ce message opaque en une
+#    phrase lisible dans les journaux du déploiement.
+# --------------------------------------------------------------------------
+log "vérification de la clé d'application"
+
+APP_KEY_ERREUR=$(php -r '
+    $cle = getenv("APP_KEY") ?: "";
+
+    if ($cle === "") {
+        echo "la variable APP_KEY est absente du service";
+        exit(1);
+    }
+
+    // Laravel ne décode la base64 que si le préfixe est présent.
+    $brut = str_starts_with($cle, "base64:")
+        ? base64_decode(substr($cle, 7), true)
+        : $cle;
+
+    if ($brut === false) {
+        echo "la valeur qui suit le préfixe base64: est illisible";
+        exit(1);
+    }
+
+    $taille = strlen($brut);
+
+    if ($taille !== 32) {
+        echo "il faut exactement 32 octets, la valeur en contient ".$taille;
+
+        if ($taille === 44) {
+            echo " : le préfixe base64: a probablement été oublié";
+        }
+
+        exit(1);
+    }
+' 2>&1) || fail "clé d'application invalide : ${APP_KEY_ERREUR}"
+
+# --------------------------------------------------------------------------
 # 1. Nginx doit écouter sur le port fourni par Render
 #
 #    Le paquet Nginx d'Alpine inclut /etc/nginx/http.d/*.conf alors que

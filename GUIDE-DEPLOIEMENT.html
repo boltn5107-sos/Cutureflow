@@ -195,7 +195,7 @@
     <a href="#avant">Avant de commencer</a>
     <a href="#etape1">1. Compte Render</a>
     <a href="#etape2">2. Créer le site</a>
-    <a href="#etape3">3. Les 4 réglages</a>
+    <a href="#etape3">3. Les 5 réglages</a>
     <a href="#etape4">4. Vérifier</a>
     <a href="#etape5">5. Compte administrateur</a>
     <a href="#etape6">6. Contrôler les images</a>
@@ -213,7 +213,7 @@
     <ol>
       <li><a href="#etape1"><b>1</b> Compte Render</a></li>
       <li><a href="#etape2"><b>2</b> Créer le site</a></li>
-      <li><a href="#etape3"><b>3</b> Les 4 réglages</a></li>
+      <li><a href="#etape3"><b>3</b> Les 5 réglages</a></li>
       <li><a href="#etape4"><b>4</b> Vérifier</a></li>
       <li><a href="#etape5"><b>5</b> Compte administrateur</a></li>
       <li><a href="#etape6"><b>6</b> Contrôler les images</a></li>
@@ -309,7 +309,7 @@
               <strong>Connect</strong>. Autorisez Render à y accéder.</li>
           <li>Donnez un nom à l'ensemble, par exemple
               <code>coutureflow</code>, puis cliquez sur <strong>Apply</strong>.</li>
-          <li>Render affiche alors les quatre informations à saisir
+          <li>Render affiche alors les cinq informations à saisir
               (étape suivante). Complétez-les et validez.</li>
         </ol>
 
@@ -335,12 +335,14 @@
       </div>
 
       <div class="step">
-        <h3><span class="num">Étape 3</span> Saisir les quatre réglages</h3>
-        <p>Ce sont les seules informations que Render vous demandera.</p>
+        <h3><span class="num">Étape 3</span> Saisir les cinq réglages</h3>
+        <p>Ce sont les seules informations que Render vous demandera. Commencez par
+           la clé d'application : sans elle, le site répond par une erreur 500.</p>
         <div class="scroll">
         <table>
           <thead><tr><th>Nom</th><th>Ce qu'il faut mettre</th><th>Exemple</th></tr></thead>
           <tbody>
+            <tr><td><code>APP_KEY</code></td><td>La clé de chiffrement, à générer sur votre ordinateur (voir juste en dessous). Elle <strong>doit</strong> commencer par <code>base64:</code></td><td><code>base64:36jKOkwvIjM1yXrxDMUjYb5Idk/rDC3uElMdwSHiGjM=</code></td></tr>
             <tr><td><code>APP_URL</code></td><td>L'adresse du site. Vous la changent si vous ajoutez un nom de domaine (étape 7).</td><td><code>https://coutureflow.onrender.com</code></td></tr>
             <tr><td><code>MAIL_FROM_ADDRESS</code></td><td>L'adresse d'expédition des courriels.</td><td><code>contact@coutureflow.sn</code></td></tr>
             <tr><td><code>WAVE_PAYMENT_NUMBER</code></td><td>Votre numéro Wave professionnel.</td><td><code>221 77 896 91 84</code></td></tr>
@@ -348,15 +350,32 @@
           </tbody>
         </table>
         </div>
+
+        <div class="box stop">
+          <span class="t">Comment obtenir la clé d'application</span>
+          <p>Cette valeur ne peut pas être inventée : elle doit contenir exactement
+             32 octets. Sur l'ordinateur où fonctionne votre atelier, ouvrez une
+             invite de commandes dans le dossier du projet, puis saisissez&nbsp;:</p>
+          <p><code>php artisan key:generate --show</code></p>
+          <p>Si cette commande n'est pas reconnue, PHP n'est pas dans le chemin du
+             système&nbsp;: utilisez alors le chemin complet de XAMPP, par exemple
+             <code>C:\xampp\php\php.exe artisan key:generate --show</code>.</p>
+          <p>Copiez la ligne affichée — elle commence par <code>base64:</code> et fait
+             51 caractères — et collez-la dans <code>APP_KEY</code>. Cette commande
+             n'écrit dans aucun fichier, elle ne fait qu'afficher une clé.
+             <strong>Ne réutilisez jamais une clé trouvée ailleurs</strong> et ne
+             montrez celle-ci à personne.</p>
+        </div>
+
         <p>Cliquez sur <strong>Apply</strong> ou <strong>Save Changes</strong>.
            Le premier déploiement démarre et dure 5 à 10 minutes.</p>
 
         <div class="box stop">
-          <span class="t">À ne surtout pas modifier</span>
-          <p>La variable <code>APP_KEY</code> est générée automatiquement par Render.
-             Elle chiffre les sessions et les liens de réinitialisation de mot de passe.
-             La changer déconnecte tout le monde et invalide les liens déjà envoyés.
-             Ne la touchez jamais.</p>
+          <span class="t">Une fois le site en ligne, ne touchez plus à APP_KEY</span>
+          <p>Render ne la génère pas à votre place&nbsp;: c'est vous qui la posez à
+             l'étape 3, et le préfixe <code>base64:</code> y est obligatoire.
+             Après le premier démarrage en revanche, ne la modifiez plus&nbsp;:
+             elle chiffre les sessions, et la changer déconnecterait tout le monde.</p>
         </div>
       </div>
 
@@ -539,7 +558,8 @@
           <tr><td>Page blanche ou « Erreur 500 »</td><td>Le conteneur échoue au démarrage</td><td>Ouvrez <strong>Logs</strong> et cherchez la dernière ligne <code>[entrypoint]</code> : elle indique exactement où cela s'est arrêté</td></tr>
           <tr><td>« base de données injoignable » dans les journaux</td><td>La base n'est pas encore prête</td><td>Attendez 2 minutes et relancez un <strong>Manual Deploy</strong>. Si l'erreur persiste, vérifiez que la région de la base est bien <code>singapore</code>, identique à celle du site</td></tr>
           <tr><td>Déploiement en échec, mention d'une migration</td><td>Une migration a échoué</td><td>Lisez le message dans <strong>Logs</strong>, corrigez, puis <strong>Manual Deploy</strong></td></tr>
-          <tr><td><code>APP_KEY</code> est vide</td><td>La variable n'a pas été générée</td><td><strong>Environment</strong> : vérifiez qu'elle existe et n'est pas vide, puis redéployez</td></tr>
+          <tr><td>« Erreur 500 » et <code>Unsupported cipher or incorrect key length</code></td><td><code>APP_KEY</code> mal saisie</td><td>Elle doit commencer par <code>base64:</code> et faire 51 caractères. Régénérez-la avec <code>php artisan key:generate --show</code>, remplacez-la dans <strong>Environment</strong>, puis <strong>Manual Deploy</strong></td></tr>
+          <tr><td><code>clé d'application invalide</code> dans les journaux</td><td><code>APP_KEY</code> absente ou mal formée</td><td>Le message placé juste après précise la cause exacte. Régénérez la clé comme ci-dessus, puis <strong>Manual Deploy</strong></td></tr>
           <tr><td>Aucune image ne s'affiche</td><td>Disque non monté</td><td><strong>Disks</strong> : le disque doit exister et être monté sur <code>/var/data</code></td></tr>
           <tr><td>Le site met 30 s à s'afficher</td><td>Le serveur se réveille après une période d'inactivité</td><td>Normal avec l'offre payante, mais moins fréquent. Vérifiez que le plan du service est bien <code>0.5c-512mb</code> et non <code>free</code></td></tr>
           <tr><td>Un client ne peut pas se connecter</td><td>Adresse écrite avec des majuscules</td><td>Ce n'est pas un défaut : l'adresse est automatiquement convertie en minuscules. En cas de souci, vérifiez qu'il n'y a pas deux comptes presque identiques</td></tr>
