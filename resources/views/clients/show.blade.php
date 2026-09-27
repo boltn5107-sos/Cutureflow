@@ -11,23 +11,24 @@
         $commandesRecentes = $client->commandes;
     @endphp
 
-    <x-page-header
-        :title="$client->nom"
-        :subtitle="$client->telephone"
-        :back="route('clients.index')"
-    >
-        <x-slot:actions>
-            <a href="{{ route('commandes.create', ['client_id' => $client->id]) }}" class="cf-btn-primary w-full sm:w-auto mb-2 sm:mb-0 cf-btn-sm">
+   <x-page-header
+    :title="$client->nom"
+    :subtitle="$client->telephone"
+    :back="route('clients.index')"
+>
+    <x-slot:actions>
+        <div class="grid grid-cols-2 gap-2 w-full sm:flex sm:flex-wrap sm:justify-end sm:w-auto">
+            <a href="{{ route('commandes.create', ['client_id' => $client->id]) }}" class="cf-btn-primary cf-btn-sm w-full">
                 <i class="fa-solid fa-scissors" aria-hidden="true"></i>
                 Nouvelle commande
             </a>
 
-            <a href="{{ route('mesures.index', $client) }}" class="cf-btn-secondary w-full sm:w-auto mb-2 sm:mb-0 cf-btn-sm">
+            <a href="{{ route('mesures.index', $client) }}" class="cf-btn-secondary cf-btn-sm w-full">
                 <i class="fa-solid fa-ruler" aria-hidden="true"></i>
                 Prendre des mesures
             </a>
 
-            <a href="{{ route('clients.edit', $client) }}" class="cf-btn-secondary w-full sm:w-auto mb-2 sm:mb-0 cf-btn-sm">
+            <a href="{{ route('clients.edit', $client) }}" class="cf-btn-secondary cf-btn-sm w-full">
                 <i class="fa-solid fa-pen" aria-hidden="true"></i>
                 Modifier
             </a>
@@ -37,10 +38,11 @@
                 title="Supprimer le client"
                 :message="'La fiche de '.$client->nom.' sera définitivement supprimée. Continuer ?'"
                 label="Supprimer"
-                class="cf-btn-danger w-full sm:w-auto mb-2 sm:mb-0 cf-btn-sm"
+                class="cf-btn-danger cf-btn-sm w-full"
             />
-        </x-slot:actions>
-    </x-page-header>
+        </div>
+    </x-slot:actions>
+</x-page-header>
 
     <div class="grid gap-6 lg:grid-cols-3">
         <div class="space-y-6 lg:col-span-2">
