@@ -44,17 +44,22 @@
                 <a href="#abonnement" class="transition hover:text-brand-900 dark:hover:text-brand-50">Abonnement</a>
             </nav>
 
-            <div class="ml-auto flex items-center gap-2 md:ml-0">
-                @auth
-                    <a href="{{ route(auth()->user()->isAdmin() ? 'admin.dashboard' : 'dashboard') }}" class="cf-btn-primary">
-                        <i class="fa-solid fa-arrow-right-to-bracket" aria-hidden="true"></i>
-                        <span class="hidden sm:inline">Mon espace</span>
-                    </a>
-                @else
-                    <a href="{{ route('login') }}" class="cf-btn-secondary">Connexion</a>
-                    <a href="{{ route('register') }}" class="cf-btn-primary">Créer mon atelier</a>
-                @endauth
-            </div>
+          <div class="ml-auto flex items-center gap-2 md:ml-0">
+    @auth
+        <a href="{{ route(auth()->user()->isAdmin() ? 'admin.dashboard' : 'dashboard') }}" class="cf-btn-primary">
+            <i class="fa-solid fa-arrow-right-to-bracket" aria-hidden="true"></i>
+            <span class="hidden sm:inline">Mon espace</span>
+        </a>
+    @else
+        <a href="{{ route('login') }}" class="cf-btn-secondary">
+            Connexion
+        </a>
+        <a href="{{ route('register') }}" class="cf-btn-primary">
+            <span class="hidden xs:inline">Créer mon atelier</span>
+            <span class="xs:hidden">Créer</span>
+        </a>
+    @endauth
+</div>
         </div>
     </header>
 
