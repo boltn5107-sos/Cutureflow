@@ -42,4 +42,4 @@ Thumbs.db
 # Déploiement
 docker-compose.yml
 docker-compose.*.yml
-DEPLOY.md
+GUIDE-DEPLOIEMENT.html

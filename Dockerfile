@@ -103,8 +103,13 @@ COPY docker/php/zz-app.ini /usr/local/etc/php/conf.d/zz-app.ini
 COPY docker/php/www.conf /usr/local/etc/php-fpm.d/www.conf
 COPY docker/nginx/default.conf.template /etc/nginx/templates/default.conf.template
 COPY docker/supervisord.conf /etc/supervisord.conf
+# L'image PHP ne contient pas Composer : sans lui, l'autoloader optimisé et
+# la découverte des paquets échouent en fin de construction. Le binaire est
+# emprunté à l'étape « vendor », bâtie sur l'image officielle Composer.
+COPY --from=composer:2.7 /usr/bin/composer /usr/local/bin/composer
+
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint
-RUN chmod +x /usr/local/bin/entrypoint
+RUN chmod +x /usr/local/bin/composer /usr/local/bin/entrypoint
 
 # Dossiers inscriptibles par le compte www-data utilisé par PHP-FPM.
 RUN mkdir -p \

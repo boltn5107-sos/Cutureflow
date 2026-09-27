@@ -6,8 +6,10 @@
 # Emplacement : /etc/nginx/conf.d/default.conf
 
 server {
+    # IPv4 uniquement : Render joint le conteneur par le port publié et
+    # n'a jamais besoin d'IPv6. Un « listen [::] » fait par ailleurs échouer
+    # le démarrage sur les hôtes dépourvus de IPv6.
     listen __PORT__;
-    listen [::]:__PORT__;
 
     server_name _;
 
