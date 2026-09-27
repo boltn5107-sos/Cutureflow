@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Couture Flow — Guide de mise en ligne</title>
+<meta name="description" content="Guide pas à pas pour mettre Couture Flow en ligne sur Render et l'exploiter ensuite.">
+<style>
+  :root{
+    --brand-50:#fdfbf7; --brand-100:#f7f2e6; --brand-200:#efe5cc; --brand-300:#d9c69c;
+    --brand-400:#c2a76b; --brand-500:#a98740; --brand-600:#8c6e30; --brand-700:#6e5424;
+    --brand-800:#523e1a; --brand-900:#382a11;
+    --accent:#c86d51; --dark:#1c1a17;
+    --ok:#4a7c59; --warn:#b07d2b; --err:#a5443a;
+    --muted:#6b6459;
+    --line:#e6ddca;
+    --sans:'Inter',ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+    --serif:'Playfair Display',ui-serif,Georgia,'Times New Roman',serif;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth; scroll-padding-top:86px}
+  body{
+    margin:0; background:var(--brand-50); color:var(--dark);
+    font-family:var(--sans); font-size:16px; line-height:1.7;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  /* ---------------------------------------------------------- en-tête */
+  header{
+    background:linear-gradient(150deg,var(--brand-900) 0%,var(--brand-700) 55%,var(--brand-600) 100%);
+    color:var(--brand-100); padding:54px 28px 46px; border-bottom:4px solid var(--accent);
+  }
+  header .wrap{max-width:1120px; margin:0 auto}
+  header .eyebrow{
+    text-transform:uppercase; letter-spacing:.16em; font-size:11.5px;
+    font-weight:600; color:var(--brand-300); margin:0 0 14px;
+  }
+  header h1{
+    font-family:var(--serif); font-weight:600; font-size:clamp(28px,4.6vw,44px);
+    line-height:1.15; margin:0 0 14px; color:#fff;
+  }
+  header p{margin:0; max-width:62ch; color:var(--brand-200); font-size:17px}
+  header .meta{margin-top:22px; font-size:13.5px; color:var(--brand-300)}
+  header .meta span{margin-right:20px; white-space:nowrap}
+
+  /* -------------------------------------------------------- navigation */
+  nav{
+    position:sticky; top:0; z-index:50;
+    background:rgba(253,251,247,.96); backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--line);
+  }
+  nav .wrap{
+    max-width:1120px; margin:0 auto; display:flex; gap:6px;
+    overflow-x:auto; padding:0 20px; scrollbar-width:none;
+  }
+  nav .wrap::-webkit-scrollbar{display:none}
+  nav a{
+    flex:0 0 auto; padding:15px 13px; font-size:13.5px; font-weight:600;
+    color:var(--brand-700); text-decoration:none; border-bottom:2px solid transparent;
+    white-space:nowrap;
+  }
+  nav a:hover{color:var(--accent); border-bottom-color:var(--brand-300)}
+
+  /* ------------------------------------------------------------ mise en page */
+  .wrap{max-width:1120px; margin:0 auto; padding:0 28px}
+  main{display:grid; grid-template-columns:216px 1fr; gap:48px; padding:44px 0 80px}
+  aside{position:sticky; top:74px; align-self:start; font-size:13.5px}
+  aside h4{
+    text-transform:uppercase; letter-spacing:.13em; font-size:10.5px;
+    color:var(--brand-500); margin:0 0 12px; font-weight:700;
+  }
+  aside ol{list-style:none; margin:0; padding:0; counter-reset:s}
+  aside ol li{counter-increment:s; margin:0 0 2px}
+  aside ol a{
+    display:flex; gap:9px; padding:6px 9px; border-radius:6px;
+    color:var(--muted); text-decoration:none; line-height:1.45;
+  }
+  aside ol a:hover{background:var(--brand-100); color:var(--brand-800)}
+  aside ol a b{color:var(--brand-400); font-weight:700; min-width:16px}
+
+  article section{margin:0 0 52px; scroll-margin-top:86px}
+  article section:last-child{margin-bottom:0}
+
+  h2{
+    font-family:var(--serif); font-size:27px; font-weight:600; color:var(--brand-800);
+    margin:0 0 6px; padding-bottom:12px; border-bottom:2px solid var(--brand-200);
+  }
+  h3{
+    font-size:19px; font-weight:700; color:var(--brand-700);
+    margin:34px 0 12px; display:flex; align-items:baseline; gap:11px;
+  }
+  h3 .num{
+    flex:0 0 auto; background:var(--brand-600); color:#fff; font-size:12.5px;
+    font-weight:700; padding:3px 10px; border-radius:20px; letter-spacing:.04em;
+  }
+  h4{font-size:15.5px; font-weight:700; color:var(--brand-700); margin:22px 0 8px}
+  p{margin:0 0 14px; max-width:74ch}
+  ul,ol{margin:0 0 16px; padding-left:22px; max-width:74ch}
+  li{margin:0 0 7px}
+  strong{color:var(--brand-800)}
+  a{color:var(--brand-600)}
+  code{
+    font-family:ui-monospace,'SF Mono',Menlo,Consolas,monospace; font-size:.88em;
+    background:var(--brand-100); color:var(--brand-800); padding:2px 6px;
+    border-radius:4px; border:1px solid var(--brand-200); white-space:nowrap;
+  }
+  pre{
+    background:var(--brand-900); color:var(--brand-100); padding:15px 18px;
+    border-radius:8px; overflow-x:auto; margin:0 0 18px;
+    border-left:4px solid var(--accent);
+  }
+  pre code{background:none; border:0; padding:0; color:var(--brand-100); font-size:13.5px}
+
+  /* ------------------------------------------------------------- tableaux */
+  .scroll{overflow-x:auto; margin:0 0 20px; -webkit-overflow-scrolling:touch}
+  table{border-collapse:collapse; width:100%; min-width:440px; font-size:14.5px}
+  th{
+    text-align:left; padding:11px 14px; background:var(--brand-100);
+    color:var(--brand-800); font-weight:700; font-size:12.5px;
+    text-transform:uppercase; letter-spacing:.06em; border-bottom:2px solid var(--brand-300);
+    white-space:nowrap;
+  }
+  td{padding:11px 14px; border-bottom:1px solid var(--line); vertical-align:top}
+  tbody tr:hover{background:var(--brand-50)}
+  tr.total td{font-weight:700; color:var(--brand-800); background:var(--brand-100); border-bottom:0}
+
+  /* -------------------------------------------------------------- encadrés */
+  .box{border-radius:8px; padding:16px 20px; margin:0 0 20px; border-left:4px solid}
+  .box p:last-child{margin-bottom:0}
+  .box p{max-width:none}
+  .box .t{font-weight:700; display:block; margin-bottom:5px; font-size:14px;
+          text-transform:uppercase; letter-spacing:.07em}
+  .note{background:var(--brand-100); border-color:var(--brand-400)}
+  .note .t{color:var(--brand-700)}
+  .stop{background:#fdf1ef; border-color:var(--accent)}
+  .stop .t{color:#8f4530}
+  .ok{background:#eef4f0; border-color:var(--ok)}
+  .ok .t{color:var(--ok)}
+
+  .step{
+    background:#fff; border:1px solid var(--line); border-radius:10px;
+    padding:20px 24px; margin:0 0 22px; box-shadow:0 1px 3px rgba(56,42,17,.05);
+  }
+  .step > h3{margin-top:0}
+
+  .tag{
+    display:inline-block; font-size:11px; font-weight:700; letter-spacing:.05em;
+    padding:3px 9px; border-radius:20px; background:var(--brand-100);
+    color:var(--brand-700); border:1px solid var(--brand-300);
+    text-transform:uppercase; vertical-align:middle;
+  }
+  .tag.new{background:#eef4f0; color:var(--ok); border-color:#b9d0bf}
+
+  footer{
+    border-top:1px solid var(--line); background:var(--brand-100);
+    padding:30px 28px; text-align:center; color:var(--muted); font-size:13.5px;
+  }
+
+  @media (max-width:900px){
+    main{grid-template-columns:1fr; gap:0; padding-top:32px}
+    aside{display:none}
+    .wrap{padding:0 20px}
+  }
+  @media print{
+    nav,aside{display:none}
+    body{background:#fff; font-size:11pt}
+    main{display:block; padding:0}
+    header{background:#fff; color:#000; border-bottom:2px solid #000; padding:0 0 18px}
+    header h1,header p,header .eyebrow,header .meta{color:#000}
+    .step{box-shadow:none; page-break-inside:avoid}
+    section{page-break-inside:avoid}
+    a{color:#000; text-decoration:none}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <p class="eyebrow">Couture Flow — Document d'exploitation</p>
+    <h1>Mise en ligne du site</h1>
+    <p>Ce guide vous accompagne, étape par étape, pour mettre Couture Flow en ligne
+       sur Render puis l'exploiter. Chaque étape indique où cliquer et quoi saisir.
+       Aucune connaissance technique n'est nécessaire.</p>
+    <div class="meta">
+      <span>Environ 30 minutes</span>
+      <span>Région : Singapour</span>
+      <span>Coût : environ 15,50 $ par mois</span>
+    </div>
+  </div>
+</header>
+
+<nav>
+  <div class="wrap">
+    <a href="#avant">Avant de commencer</a>
+    <a href="#etape1">1. Compte Render</a>
+    <a href="#etape2">2. Créer le site</a>
+    <a href="#etape3">3. Les 4 réglages</a>
+    <a href="#etape4">4. Vérifier</a>
+    <a href="#etape5">5. Compte administrateur</a>
+    <a href="#etape6">6. Contrôler les images</a>
+    <a href="#etape7">7. Nom de domaine</a>
+    <a href="#exploitation">Exploitation</a>
+    <a href="#sauvegardes">Sauvegardes</a>
+    <a href="#depannage">Dépannage</a>
+  </div>
+</nav>
+
+<main class="wrap">
+
+  <aside>
+    <h4>Sommaire</h4>
+    <ol>
+      <li><a href="#etape1"><b>1</b> Compte Render</a></li>
+      <li><a href="#etape2"><b>2</b> Créer le site</a></li>
+      <li><a href="#etape3"><b>3</b> Les 4 réglages</a></li>
+      <li><a href="#etape4"><b>4</b> Vérifier</a></li>
+      <li><a href="#etape5"><b>5</b> Compte administrateur</a></li>
+      <li><a href="#etape6"><b>6</b> Contrôler les images</a></li>
+      <li><a href="#etape7"><b>7</b> Nom de domaine</a></li>
+      <li><a href="#exploitation"><b>·</b> Exploitation</a></li>
+      <li><a href="#sauvegardes"><b>·</b> Sauvegardes</a></li>
+      <li><a href="#depannage"><b>·</b> Dépannage</a></li>
+    </ol>
+  </aside>
+
+  <article>
+
+    <!-- ==================================================== AVANT -->
+    <section id="avant">
+      <h2>Avant de commencer</h2>
+
+      <p>Tout se passe chez <strong>Render</strong>, un hébergeur. Render crée le site,
+         la base de données et l'espace de stockage, puis les relie entre eux.
+         Vous n'avez rien à installer sur votre ordinateur.</p>
+
+      <h4>Ce qu'il faut avoir</h4>
+      <div class="scroll">
+      <table>
+        <thead><tr><th>Élément</th><th>Détail</th></tr></thead>
+        <tbody>
+          <tr><td>Compte GitHub</td><td>Celui qui possède déjà le projet. Créez votre compte Render avec <strong>ce</strong> compte GitHub, sinon Render ne pourra pas lire le code.</td></tr>
+          <tr><td>Compte Render</td><td>Gratuit. <a href="https://render.com" target="_blank" rel="noopener">render.com</a> — inscription par GitHub en une minute.</td></tr>
+          <tr><td>Carte bancaire</td><td>Obligatoire même sur l'offre d'essai. Render débite 1 $ de vérification, remboursé sous quelques jours.</td></tr>
+          <tr><td>Numéro Wave professionnel</td><td>Le numéro affiché aux clients sur la page d'inscription, et le nom associé à ce compte.</td></tr>
+        </tbody>
+      </table>
+      </div>
+
+      <h4>Ce que ça coûte</h4>
+      <div class="scroll">
+      <table>
+        <thead><tr><th>Poste</th><th>Prix par mois</th><th>Pourquoi</th></tr></thead>
+        <tbody>
+          <tr><td>Espace de travail Render</td><td>0,00 $</td><td>L'offre de départ, sans abonnement.</td></tr>
+          <tr><td>Le site</td><td>7,00 $</td><td>Serveur toujours allumé, avec accès au terminal.</td></tr>
+          <tr><td>Stockage 10 Go</td><td>2,50 $</td><td>Les photos et les reçus de paiement, conservés pour toujours.</td></tr>
+          <tr><td>Base de données</td><td>6,00 $</td><td>PostgreSQL, 1 Go inclus.</td></tr>
+          <tr><td>Nom de domaine</td><td>0,00 $</td><td>Deux sont fournis avec l'offre de départ.</td></tr>
+          <tr class="total"><td>Total</td><td>≈ 15,50 $</td><td>Plus 5 Go de transfert internet inclus.</td></tr>
+        </tbody>
+      </table>
+      </div>
+
+      <div class="box stop">
+        <span class="t">L'offre gratuite ne convient pas</span>
+        <p>Elle paraît alléchante, mais elle est inutilisable ici, pour trois raisons
+           concrètes :</p>
+        <ul>
+          <li><strong>Pas de stockage</strong> : toutes les photos et tous les reçus de
+              paiement disparaîtraient à chaque redémarrage du serveur.</li>
+          <li><strong>Pas de terminal</strong> : impossible de créer le premier compte
+              administrateur.</li>
+          <li><strong>Le site se met en veille</strong> après quelques minutes
+              d'inactivité et met 30 à 50 secondes à se réveiller.</li>
+        </ul>
+        <p style="margin-top:12px">La base de données gratuite, en plus, est supprimée
+           au bout de 30 jours. Le site et la base sont ici en version payante : c'est
+           ce qui garantit que vos clients et vos images restent disponibles.</p>
+      </div>
+    </section>
+
+    <!-- ==================================================== ÉTAPE 1 -->
+    <section id="etape1">
+      <h2>Première mise en ligne</h2>
+
+      <div class="step">
+        <h3><span class="num">Étape 1</span> Créer le compte Render</h3>
+        <ol>
+          <li>Ouvrez <a href="https://dashboard.render.com" target="_blank" rel="noopener">dashboard.render.com</a> et cliquez sur <strong>Sign Up</strong>.</li>
+          <li>Choisissez <strong>Continue with GitHub</strong>, puis autorisez Render.</li>
+          <li>Confirmez votre adresse e-mail avec le lien reçu.</li>
+          <li>Render demande une carte bancaire. Saisissez-la : le contrôle de 1 $ est
+              remboursé automatiquement.</li>
+          <li>Choisissez l'offre d'espace de travail <strong>Hobby</strong> (0 $).
+              N'acceptez aucun supplement.</li>
+        </ol>
+      </div>
+
+      <div class="step">
+        <h3><span class="num">Étape 2</span> Créer le site et la base d'un seul coup</h3>
+        <p>Le projet contient déjà un fichier de description que Render sait lire.
+           Il va donc créer les trois ressources nécessaires, sans aucune saisie
+           technique.</p>
+        <ol>
+          <li>Menu de gauche : <strong>Blueprints</strong>, puis
+              <strong>New Blueprint Instance</strong>.</li>
+          <li>Cherchez le dépôt <code>boltn5107-sos/Cutureflow</code> et cliquez
+              <strong>Connect</strong>. Autorisez Render à y accéder.</li>
+          <li>Donnez un nom à l'ensemble, par exemple
+              <code>coutureflow</code>, puis cliquez sur <strong>Apply</strong>.</li>
+          <li>Render affiche alors les quatre informations à saisir
+              (étape suivante). Complétez-les et validez.</li>
+        </ol>
+
+        <h4>Ce que Render va créer pour vous</h4>
+        <div class="scroll">
+        <table>
+          <thead><tr><th>Ressource</th><th>Contenu</th></tr></thead>
+          <tbody>
+            <tr><td><code>coutureflow</code></td><td>Le site, en région Singapour, avec 10 Go de stockage.</td></tr>
+            <tr><td><code>coutureflow-db</code></td><td>La base de données PostgreSQL, également en Singapour.</td></tr>
+            <tr><td><code>coutureflow-media</code></td><td>Le disque qui conserve les photos et les reçus.</td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <div class="box note">
+          <span class="t">La base est reliée automatiquement</span>
+          <p>Le site et la base sont dans la même région : ils communiquent par un
+             réseau privé interne de Render. Vous n'avez donc <strong>aucun mot de
+             passe de base de données à copier</strong>, et la base est par ailleurs
+             inaccessible depuis Internet.</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <h3><span class="num">Étape 3</span> Saisir les quatre réglages</h3>
+        <p>Ce sont les seules informations que Render vous demandera.</p>
+        <div class="scroll">
+        <table>
+          <thead><tr><th>Nom</th><th>Ce qu'il faut mettre</th><th>Exemple</th></tr></thead>
+          <tbody>
+            <tr><td><code>APP_URL</code></td><td>L'adresse du site. Vous la changent si vous ajoutez un nom de domaine (étape 7).</td><td><code>https://coutureflow.onrender.com</code></td></tr>
+            <tr><td><code>MAIL_FROM_ADDRESS</code></td><td>L'adresse d'expédition des courriels.</td><td><code>contact@coutureflow.sn</code></td></tr>
+            <tr><td><code>WAVE_PAYMENT_NUMBER</code></td><td>Votre numéro Wave professionnel.</td><td><code>221 77 896 91 84</code></td></tr>
+            <tr><td><code>WAVE_PAYMENT_NAME</code></td><td>Le nom du titulaire du compte Wave.</td><td><code>COUTURE FLOW</code></td></tr>
+          </tbody>
+        </table>
+        </div>
+        <p>Cliquez sur <strong>Apply</strong> ou <strong>Save Changes</strong>.
+           Le premier déploiement démarre et dure 5 à 10 minutes.</p>
+
+        <div class="box stop">
+          <span class="t">À ne surtout pas modifier</span>
+          <p>La variable <code>APP_KEY</code> est générée automatiquement par Render.
+             Elle chiffre les sessions et les liens de réinitialisation de mot de passe.
+             La changer déconnecte tout le monde et invalide les liens déjà envoyés.
+             Ne la touchez jamais.</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <h3><span class="num">Étape 4</span> Vérifier que tout fonctionne</h3>
+        <ol>
+          <li>Dans le service <code>coutureflow</code>, ouvrez l'onglet
+              <strong>Logs</strong> et suivez la progression : chaque ligne commence
+              par <code>[entrypoint]</code>.</li>
+          <li>Quand le statut du déploiement passe à <strong>Live</strong>, ouvrez
+              <a href="https://coutureflow.onrender.com/up" target="_blank" rel="noopener"><code>/up</code></a> :
+              la page doit répondre <code>200</code>.</li>
+          <li>Ouvrez ensuite <a href="https://coutureflow.onrender.com" target="_blank" rel="noopener">l'adresse du site</a> :
+              la page d'accueil doit s'afficher normalement.</li>
+        </ol>
+      </div>
+
+      <div class="step">
+        <h3><span class="num">Étape 5</span> Créer le compte administrateur</h3>
+        <p>L'application a besoin d'un premier compte administrateur : c'est lui qui
+           valide les inscriptions et les paiements. La page d'installation habituelle
+           est neutralisée ici, car elle enregistre ses réglages dans un fichier
+           que Render efface à chaque redémarrage. On passe donc par le terminal.</p>
+        <ol>
+          <li>Dans le service <code>coutureflow</code>, onglet <strong>Shell</strong>
+              (en haut à droite).</li>
+          <li>Attendez l'ouverture de l'invite de commande, puis saisissez :</li>
+        </ol>
+        <pre><code>php artisan coutureflow:admin votre@email.sn --nom="Votre nom"</code></pre>
+        <ol start="3">
+          <li><strong>Notez le mot de passe affiché</strong> : il ne sera plus jamais
+              réaffiché. Conservez-le dans un gestionnaire de mots de passe.</li>
+          <li>Ouvrez <a href="https://coutureflow.onrender.com/connexion" target="_blank" rel="noopener">la page de connexion</a>
+              et connectez-vous.</li>
+        </ol>
+        <div class="box note">
+          <span class="t">Bon à savoir</span>
+          <p>Pour un nouveau compte, aucune confirmation n'est demandée. Si un compte
+             existe déjà avec cette adresse, la commande demande confirmation avant de
+             le transformer en administrateur, et <strong>conserve son mot de passe</strong>
+             s'il en a un.</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <h3><span class="num">Étape 6</span> Contrôler la conservation des images</h3>
+        <p>Cette vérification est indispensable : elle prouve que les photos et les
+           reçus seront bien conservés d'un redémarrage à l'autre.</p>
+        <ol>
+          <li>Ouvrez une <strong>fenêtre de navigation privée</strong> et y créez un
+              compte atelier depuis la page d'inscription, avec une capture de paiement
+              quelconque. Un administrateur ne peut pas s'abonner lui-même, d'où la
+              fenêtre séparée.</li>
+          <li>Revenez dans la fenêtre normale, toujours connecté en administrateur.</li>
+          <li>Ouvrez <strong>Paiements</strong> : la capture doit s'afficher
+              <strong>directement</strong> dans la page, sans aucun clic.</li>
+          <li>Ouvrez <strong>Clients</strong>, créez un client, puis envoyez-lui une
+              photo de profil et vérifiez-la sur sa fiche.</li>
+          <li>Supprimez ensuite le compte d'essai et la capture associée.</li>
+        </ol>
+        <p>Si une image ne s'affiche pas, le problème vient du disque, pas du code :
+           ouvrez l'onglet <strong>Disks</strong> du service et vérifiez que le disque
+           de 10 Go est présent et monté sur <code>/var/data</code>.</p>
+      </div>
+
+      <div class="step">
+        <h3><span class="num">Étape 7</span> Brancher un nom de domaine <span class="tag new">Optionnel</span></h3>
+        <ol>
+          <li>Menu du service, onglet <strong>Settings</strong>, puis
+              <strong>Custom Domains</strong>.</li>
+          <li>Ajoutez le domaine, par exemple <code>coutureflow.sn</code>.</li>
+          <li>Chez votre registrar, créez un enregistrement <code>CNAME</code> pointant
+              vers la valeur affichée par Render.</li>
+          <li>Retour dans <strong>Environment</strong>, remplacez
+              <code>APP_URL</code> par <code>https://coutureflow.sn</code>, puis
+              <strong>Save Changes</strong>.</li>
+        </ol>
+        <p>Le certificat HTTPS est délivré automatiquement. Comptez de trente minutes à
+           quelques heures selon le domaine.</p>
+      </div>
+    </section>
+
+    <!-- ================================================ EXPLOITATION -->
+    <section id="exploitation">
+      <h2>Exploitation courante</h2>
+
+      <h3 style="margin-top:0">Mettre à jour le site après une modification du code</h3>
+      <ol>
+        <li>La modification est poussée sur la branche <code>main</code> du dépôt GitHub.</li>
+        <li>Le site <strong>ne se redéploie pas tout seul</strong> : c'est un choix
+            volontaire, car le démarrage applique les migrations de la base.</li>
+        <li>Dans Render : bouton <strong>Manual Deploy</strong> en haut à droite, puis
+            <strong>Deploy latest commit</strong>.</li>
+        <li>Comptez 5 minutes. Le site est indisponible quelques secondes pendant
+            l'échange des serveurs — le disque étant attaché au site, Render ne peut pas
+            faire cohabiter deux versions. C'est le prix de la conservation des images.</li>
+      </ol>
+      <p>En cas de problème, le bouton <strong>Rollback</strong> permet de revenir
+         à l'une des cinq dernières versions.</p>
+
+      <h3>Changer le numéro Wave</h3>
+      <p>Onglet <strong>Environment</strong>, modifier
+         <code>WAVE_PAYMENT_NUMBER</code>, puis <strong>Save Changes</strong>.
+         Le nouveau numéro s'affiche sur la page d'inscription dès la fin du
+         redéploiement.</p>
+
+      <h3>Envoyer les rappels d'échéance</h3>
+      <p>Les alertes de livraison et d'expiration d'abonnement se déclenchent par une
+         commande à lancer dans l'onglet <strong>Shell</strong> :</p>
+      <pre><code>php artisan coutureflow:notifier --days=7</code></pre>
+      <p>Elle analyse les commandes en retard, les livraisons proches et les
+         abonnements qui expirent, puis inscrit les alertes dans la messagerie interne
+         des utilisateurs concernés. Le paramètre <code>--days</code> indique le nombre
+         de jours d'avance pour l'expiration. Aucune automatisation n'est en place :
+         la commande se lance quand vous le décidez.</p>
+
+      <h3>Consulter les journaux</h3>
+      <p>Onglet <strong>Logs</strong> : tout ce que l'application écrit, plus les
+         messages de démarrage du conteneur. Les lignes commençant par
+         <code>[entrypoint]</code> indiquent la progression du démarrage. Les
+         journaux sont conservés 7 jours.</p>
+
+      <h3>Augmenter l'espace de stockage</h3>
+      <p>Les deux ressources se dimensionnent séparément, à tout moment, sans
+         interruption de service :</p>
+      <ul>
+        <li><strong>Base de données</strong> : page de la base, section
+            <em>Storage</em>. Les tailles possibles sont 1 Go, 5 Go, 10 Go… On ne peut
+            jamais réduire.</li>
+        <li><strong>Disque des images</strong> : onglet <strong>Disks</strong> du
+            service, puis <strong>Change size</strong>.</li>
+      </ul>
+    </section>
+
+    <!-- ================================================== SAUVEGARDES -->
+    <section id="sauvegardes">
+      <h2>Sauvegardes</h2>
+      <p>Les données sont réparties en deux endroits, et chacun est sauvegardé
+         séparément. Il faut penser aux deux.</p>
+
+      <div class="scroll">
+      <table>
+        <thead><tr><th>Données</th><th>Où</th><th>Sauvegarde</th><th>Comment restaurer</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>Comptes, clients, commandes, paiements</td>
+            <td>Base PostgreSQL</td>
+            <td>Sauvegarde logique automatique (instance payante) et restauration à un instant passé sur 3 jours</td>
+            <td>Page de la base &rarr; <em>Backups</em> &rarr; <em>Restore</em></td>
+          </tr>
+          <tr>
+            <td>Photos, reçus de paiement</td>
+            <td>Disque du service</td>
+            <td>Cliché automatique toutes les 24 h, conservé au moins 7 jours</td>
+            <td>Onglet <em>Disks</em> &rarr; <em>Snapshots</em> &rarr; <em>Restore</em></td>
+          </tr>
+        </tbody>
+      </table>
+      </div>
+
+      <div class="box stop">
+        <span class="t">Attention à l'ordre de restauration</span>
+        <p>Si vous restaurez le disque des images, ne restaurez la base qu'ensuite.
+           Dans l'autre ordre, la base pourrait faire référence à des fichiers
+           disparus. Et ne restaurez jamais le disque pour récupérer la base : elle
+           n'est pas dessus.</p>
+      </div>
+      <p>Enfin, testez une restauration complète une fois, sur un site vide, avant
+         d'avoir de vraies données à perdre. Une sauvegarde jamais testée n'est pas
+         une sauvegarde.</p>
+    </section>
+
+    <!-- =================================================== DEPANNAGE -->
+    <section id="depannage">
+      <h2>Dépannage</h2>
+      <div class="scroll">
+      <table>
+        <thead><tr><th>Symptôme</th><th>Cause probable</th><th>Solution</th></tr></thead>
+        <tbody>
+          <tr><td>Page blanche ou « Erreur 500 »</td><td>Le conteneur échoue au démarrage</td><td>Ouvrez <strong>Logs</strong> et cherchez la dernière ligne <code>[entrypoint]</code> : elle indique exactement où cela s'est arrêté</td></tr>
+          <tr><td>« base de données injoignable » dans les journaux</td><td>La base n'est pas encore prête</td><td>Attendez 2 minutes et relancez un <strong>Manual Deploy</strong>. Si l'erreur persiste, vérifiez que la région de la base est bien <code>singapore</code>, identique à celle du site</td></tr>
+          <tr><td>Déploiement en échec, mention d'une migration</td><td>Une migration a échoué</td><td>Lisez le message dans <strong>Logs</strong>, corrigez, puis <strong>Manual Deploy</strong></td></tr>
+          <tr><td><code>APP_KEY</code> est vide</td><td>La variable n'a pas été générée</td><td><strong>Environment</strong> : vérifiez qu'elle existe et n'est pas vide, puis redéployez</td></tr>
+          <tr><td>Aucune image ne s'affiche</td><td>Disque non monté</td><td><strong>Disks</strong> : le disque doit exister et être monté sur <code>/var/data</code></td></tr>
+          <tr><td>Le site met 30 s à s'afficher</td><td>Le serveur se réveille après une période d'inactivité</td><td>Normal avec l'offre payante, mais moins fréquent. Vérifiez que le plan du service est bien <code>0.5c-512mb</code> et non <code>free</code></td></tr>
+          <tr><td>Un client ne peut pas se connecter</td><td>Adresse écrite avec des majuscules</td><td>Ce n'est pas un défaut : l'adresse est automatiquement convertie en minuscules. En cas de souci, vérifiez qu'il n'y a pas deux comptes presque identiques</td></tr>
+        </tbody>
+      </table>
+      </div>
+
+      <div class="box note">
+        <span class="t">Comment les clients sont prévenus</span>
+        <p>Couture Flow n'envoie <strong>aucun e-mail ni SMS</strong>, et ce n'est pas
+           un oubli. Toutes les notifications — paiement reçu, commande prête,
+           livraison proche, abonnement qui expire — arrivent dans la
+           <strong>messagerie interne</strong> du site : chaque utilisateur a une
+           icône de notification, et rien ne quitte le serveur. Aucun service
+           d'envoi à acheter, aucune adresse à protéger, aucun mot de passe
+           oublié à réinitialiser par courriel.</p>
+        <p style="margin-top:10px">Si un jour vous souhaitez des e-mails, c'est un
+           ajout à faire décider, pas un réglage à activer.</p>
+      </div>
+
+      <div class="box ok">
+        <span class="t">Repartir de zéro</span>
+        <p>Supprimer le service et la base Render, puis recommencer à l'étape 1. Un
+           déploiement raté ne laisse jamais de trace sur les utilisateurs : rien
+           n'était encore en service.</p>
+      </div>
+    </section>
+
+    <!-- ================================================ RECAPITULATIF -->
+    <section id="recap">
+      <h2>Récapitulatif</h2>
+      <p>Une fois les sept étapes effectuées, l'application est en ligne et
+         exploitable. Il ne reste que trois gestes à connaître :</p>
+      <div class="scroll">
+      <table>
+        <thead><tr><th>Quand</th><th>Geste</th><th>Où</th></tr></thead>
+        <tbody>
+          <tr><td>Après une modification du code</td><td><strong>Manual Deploy</strong></td><td>Page du service</td></tr>
+          <tr><td>Après une modification d'un réglage</td><td><strong>Save Changes</strong></td><td>Onglet Environment</td></tr>
+          <tr><td>Régulièrement</td><td><code>php artisan coutureflow:notifier</code></td><td>Onglet Shell</td></tr>
+        </tbody>
+      </table>
+      </div>
+    </section>
+
+  </article>
+</main>
+
+<footer>
+  Couture Flow — document d'exploitation, version pour PostgreSQL et offre payante.
+  Dernière mise à jour : septembre 2026.
+</footer>
+
+</body>
+</html>

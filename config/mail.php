@@ -12,6 +12,10 @@ return [
     | the message. All additional mailers can be configured within the
     | "mailers" array. Examples of each type of mailer are provided.
     |
+    | Aucune notification de l'application ne part par e-mail : tout passe par
+    | la messagerie interne (canal « database », voir BaseNotification).
+    | Ce réglage reste à « log » tant qu'aucun envoi réel n'est prévu.
+    |
     */
 
     'default' => env('MAIL_MAILER', 'log'),

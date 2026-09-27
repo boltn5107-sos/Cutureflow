@@ -20,9 +20,10 @@ services:
     dockerContext: .
 
     # Les disques persistants sont réservés aux plans payants.
-    # Frankfurt est la région la plus proche du Sénégal.
-    plan: starter
-    region: frankfurt
+    # 0.5c-512mb est l'ancien plan « Starter » : 7 $/mois.
+    # Singapore : la région la plus proche du Sénégal.
+    plan: 0.5c-512mb
+    region: singapore
 
     # Route de santé Laravel (bootstrap/app.php). Si elle ne répond pas en
     # quelques secondes, Render considère le déploiement comme échoué.
@@ -30,7 +31,7 @@ services:
 
     # Déploiement manuel : ce projet joue ses migrations au démarrage, mieux
     # vaut déclencher le déploiement après avoir relu le diff.
-    autoDeploy: false
+    autoDeployTrigger: 'off'
 
     # ------------------------------------------------------------- variables
     envVars:
@@ -54,22 +55,20 @@ services:
         value: file
 
       # ---------------------------------------------------------------- base
-      # Render ne fournit pas de MySQL managé : renseigner ici les
-      # identifiants d'une base externe (Aiven, PlanetScale, Pi-lon…).
-      # Pour la base PostgreSQL incluse dans Render, remplacer par :
-      #   DB_CONNECTION: pgsql
+      # Render fournit sa propre PostgreSQL, déclarée plus bas dans
+      # « databases ». Le réseau privé de Render relie le service à la base
+      # car les deux sont en région Singapore : la connexion ne quitte jamais
+      # l'infrastructure de Render et n'a besoin d'aucun certificat.
+      #
+      # DB_URL est une URL unique (postgresql://user:password@host:port/base)
+      # que Render maintient à jour. Laravel la décompose tout seul et ignore
+      # DB_HOST, DB_PORT, DB_DATABASE, DB_USERNAME et DB_PASSWORD.
       - key: DB_CONNECTION
-        value: mysql
-      - key: DB_HOST
-        sync: false
-      - key: DB_PORT
-        value: "3306"
-      - key: DB_DATABASE
-        sync: false
-      - key: DB_USERNAME
-        sync: false
-      - key: DB_PASSWORD
-        sync: false
+        value: pgsql
+      - key: DB_URL
+        fromDatabase:
+          name: coutureflow-db
+          property: connectionString
 
       # ------------------------------------------------- sessions et caches
       # Base de données plutôt que fichier : le conteneur est éphémère.
@@ -101,6 +100,10 @@ services:
         value: info
 
       # -------------------------------------------------------------- e-mail
+      # Aucune notification n'est expédiée par e-mail : tout passe par la
+      # messagerie interne du site (canal « database »). Le service de
+      # transport reste « log » — les éventuels messages ne quittent jamais
+      # le serveur, ce qui évite toute fuite d'adresse.
       - key: MAIL_MAILER
         value: log
       - key: MAIL_FROM_ADDRESS
@@ -132,3 +135,26 @@ services:
       name: coutureflow-media
       mountPath: /var/data
       sizeGB: 10
+
+# ==========================================================================
+#  Base de données
+# ==========================================================================
+#  PostgreSQL 17 en offre payante : 6 $/mois, 1 Go de stockage inclus.
+#  Les photos et les reçus ne sont pas ici : ils vivent sur le disque du
+#  service. La base ne contient que du texte, 1 Go suffit largement.
+#
+#  ipAllowList: [] interdit toute connexion depuis Internet : seule la
+#  connexion privée de Render est acceptée. Personne, pas même un pirate,
+#  ne peut donc se connecter à la base depuis l'extérieur. Pour un outil
+#  externe (pgAdmin, DBeaver), il faudra rouvrir l'accès le temps de
+#  l'opération, puis refermer.
+# ==========================================================================
+databases:
+  - name: coutureflow-db
+    region: singapore
+    postgresMajorVersion: "17"
+    plan: 0.1c-256mb
+    databaseName: coutureflow
+    user: coutureflow
+    diskSizeGB: 1
+    ipAllowList: []

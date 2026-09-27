@@ -12,6 +12,10 @@
 #                              storage/app/private y est relié en symlink
 #    AUTO_MIGRATE              "true" pour jouer les migrations au démarrage
 #    DB_WAIT_ATTEMPTS          nombre de tentatives d'attente de la base
+#
+#  Base de données : Render fournit sa PostgreSQL via DB_URL (réseau privé,
+#  même région). DB_HOST/DB_PORT sont également acceptés pour une base
+#  externe. Aucun réglage SSL n'est nécessaire dans les deux cas.
 # ==========================================================================
 
 set -eu
@@ -83,6 +87,11 @@ if [ -n "${PERSISTENT_STORAGE_PATH:-}" ]; then
     rm -rf "${APP_DIR}/storage/app/private"
     ln -sfn "${PERSISTENT_STORAGE_PATH}/private" "${APP_DIR}/storage/app/private"
 
+    # chown -R ne descend pas dans un lien symbolique : la cible est donc
+    # traitée explicitement, sinon PHP-FPM (www-data) ne pourrait pas y écrire.
+    chown -R www-data:www-data "${PERSISTENT_STORAGE_PATH}/private" 2>/dev/null ||
+        log "droits de ${PERSISTENT_STORAGE_PATH}/private inchangés (déjà propriétés de www-data)"
+
     log "preuves et photos conservées dans ${PERSISTENT_STORAGE_PATH}/private"
 else
     log "aucun disque persistant : les fichiers téléversés seront perdus au redémarrage"
@@ -112,25 +121,45 @@ php artisan storage:link --force >/dev/null 2>&1 ||
 # 4. Attente de la base de données
 # --------------------------------------------------------------------------
 wait_for_db() {
-    [ -n "${DB_HOST:-}" ] || return 0
+    [ -n "${DB_URL:-}${DB_HOST:-}" ] || return 0
 
     attempts=0
 
     while [ "$attempts" -lt "${DB_WAIT_ATTEMPTS}" ]; do
         if php -r '
             $driver = getenv("DB_CONNECTION") ?: "mysql";
-            $host   = getenv("DB_HOST");
-            $port   = getenv("DB_PORT") ?: "3306";
-            $db     = getenv("DB_DATABASE") ?: "";
-            $user   = getenv("DB_USERNAME") ?: "";
-            $pass   = getenv("DB_PASSWORD");
-            $pass   = false === $pass ? "" : $pass;
+
+            // Render fournit la base PostgreSQL via une URL unique
+            // (fromDatabase: connectionString) : il faut la decomposer.
+            $url = getenv("DB_URL") ?: "";
+
+            if ($url) {
+                $parts = parse_url($url);
+                $host  = $parts["host"] ?? "";
+                $port  = $parts["port"] ?? "";
+                $db    = ltrim($parts["path"] ?? "", "/");
+                $user  = isset($parts["user"]) ? rawurldecode($parts["user"]) : "";
+                $pass  = isset($parts["pass"]) ? rawurldecode($parts["pass"]) : "";
+            } else {
+                $host  = getenv("DB_HOST") ?: "";
+                $port  = getenv("DB_PORT") ?: "";
+                $db    = getenv("DB_DATABASE") ?: "";
+                $user  = getenv("DB_USERNAME") ?: "";
+                $pass  = getenv("DB_PASSWORD");
+                $pass  = false === $pass ? "" : $pass;
+            }
+
+            if (! $host) {
+                exit(0);
+            }
 
             $options = [];
 
             if ("pgsql" === $driver) {
+                $port = $port ?: "5432";
                 $dsn = "pgsql:host=".$host.";port=".$port.";dbname=".$db.";connect_timeout=5";
             } else {
+                $port = $port ?: "3306";
                 $dsn = "mysql:host=".$host.";port=".$port.";dbname=".$db;
                 $options[PDO::ATTR_TIMEOUT] = 5;
             }
@@ -183,6 +212,9 @@ fi
 # --------------------------------------------------------------------------
 # 6. Caches — ils lisent les variables d'environnement fournies par Render,
 #    ils ne doivent donc pas être produits pendant la construction de l'image.
+#
+#    La base PostgreSQL de Render est jointe par le réseau privé de Render
+#    (même région) : aucun certificat ni réglage SSL n'est à installer.
 # --------------------------------------------------------------------------
 log "génération des caches"
 

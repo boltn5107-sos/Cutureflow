@@ -23,6 +23,8 @@ class LoginController extends Controller
             'password' => ['required', 'string'],
         ]);
 
+        $credentials['email'] = mb_strtolower(trim($credentials['email']));
+
         if (! Auth::attempt($credentials, $request->boolean('remember'))) {
             throw ValidationException::withMessages([
                 'email' => 'Ces identifiants ne correspondent pas à nos enregistrements.',

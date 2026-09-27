@@ -176,6 +176,40 @@ class RegistrationTest extends TestCase
         $this->assertGuest();
     }
 
+    public function test_la_connexion_ignore_la_casse_de_l_adresse_email(): void
+    {
+        $user = User::factory()->create([
+            'email' => 'fatou@example.test',
+            'password' => bcrypt('motdepasse123'),
+            'status' => UserStatus::Valide,
+        ]);
+
+        // PostgreSQL distingue les majuscules, contrairement a MySQL : la
+        // connexion doit normaliser l'adresse avant de la comparer.
+        $this->post('/connexion', [
+            'email' => 'Fatou@Example.Test',
+            'password' => 'motdepasse123',
+        ])->assertRedirect(route('dashboard'));
+
+        $this->assertAuthenticatedAs($user);
+    }
+
+    public function test_un_mauvais_mot_de_passe_est_toujours_refuse(): void
+    {
+        User::factory()->create([
+            'email' => 'fatou@example.test',
+            'password' => bcrypt('motdepasse123'),
+            'status' => UserStatus::Valide,
+        ]);
+
+        $this->post('/connexion', [
+            'email' => 'FATOU@example.test',
+            'password' => 'mauvais-mot-de-passe',
+        ])->assertSessionHasErrors('email');
+
+        $this->assertGuest();
+    }
+
     public function test_un_atelier_peut_deposer_une_preuve_de_paiement(): void
     {
         Storage::fake('local');
