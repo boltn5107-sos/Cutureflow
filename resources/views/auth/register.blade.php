@@ -152,7 +152,7 @@
                         <div class="mt-4 grid gap-4 sm:grid-cols-2">
                             <div class="rounded-lg border border-brand-200 bg-white p-4 dark:border-white/10 dark:bg-white/5">
                                 <p class="text-xs text-brand-600 dark:text-brand-300">Numéro Wave à payer</p>
-                                <p class="mt-1.5 font-serif text-2xl font-semibold tracking-tight tabular-nums">
+                                <p class="mt-1.5 font-serif text-2xl font-semibold tracking-tight tabular-nums whitespace-nowrap">
                                     {{ $wave['number'] }}
                                 </p>
                             </div>
@@ -172,7 +172,7 @@
 <p class="text-xs font-semibold tracking-wide text-brand-700 uppercase dark:text-brand-200">
                             <i class="fa-solid fa-circle-info mt-0.5" aria-hidden="true"></i>
                             Versez au numéro <strong class="font-semibold">{{ $wave['number'] }}</strong>
-                            au nom de <strong class="font-semibold">{{ $wave['name'] }}</strong>,
+                            ,
                             puis procedez à l'étape 2.
                         </p>
                     </div>

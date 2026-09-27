@@ -1,7 +1,7 @@
 <header
     class="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-brand-200/70 bg-white/85 px-4 backdrop-blur-md sm:px-6 lg:px-8 dark:border-white/10 dark:bg-brand-dark/85"
     x-data="{ menu: false, profil: false, notifs: false }"
-    @keydown.escape.window="menu = false; profil = false; notifs = false"
+    @keydown.escape.window="$store.sidebar.open = false; menu = false; profil = false; notifs = false"
 >
     <a href="{{ route('dashboard') }}" class="flex items-center gap-2.5 lg:hidden">
         <span class="flex size-9 items-center justify-center rounded-lg bg-brand-800 text-brand-50 dark:bg-brand-400 dark:text-brand-900">
@@ -23,7 +23,7 @@
         type="button"
         class="ml-auto flex size-9 items-center justify-center rounded-lg text-brand-700 transition hover:bg-brand-100/70 dark:text-brand-200 dark:hover:bg-white/10 lg:hidden"
         aria-label="Menu principal"
-        x-on:click="menu = !menu"
+        x-on:click="$store.sidebar.open = !$store.sidebar.open"
     >
         <i class="fa-solid fa-bars text-sm" aria-hidden="true"></i>
     </button>

@@ -190,18 +190,18 @@
                 message="Aucun abonnement n'arrive à échéance dans les 7 prochains jours."
             />
         @else
-            <div class="overflow-x-auto">
-                <table class="cf-table">
-                    <thead>
-                        <tr>
-                            <th>Atelier</th>
-                            <th>Responsable</th>
-                            <th>Échéance</th>
-                            <th>Jours restants</th>
-                            <th class="text-right">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
+<div class="overflow-x-auto">
+                 <table class="cf-table min-w-max">
+                     <thead>
+                         <tr>
+                             <th class="whitespace-nowrap">Atelier</th>
+                             <th class="whitespace-nowrap">Responsable</th>
+                             <th class="whitespace-nowrap tabular-nums">Échéance</th>
+                             <th class="whitespace-nowrap">Jours restants</th>
+                             <th class="text-right whitespace-nowrap">Action</th>
+                         </tr>
+                     </thead>
+                     <tbody>
                         @foreach ($abonnementsExpires as $expire)
                             @php $jours = (int) now()->startOfDay()->diffInDays($expire->atelier->valid_until->startOfDay(), false); @endphp
                             <tr>

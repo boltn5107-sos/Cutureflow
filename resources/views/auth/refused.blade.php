@@ -58,7 +58,7 @@
                         <div class="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center">
                             <div class="flex items-center gap-2.5 rounded-lg bg-brand-100 px-3.5 py-2.5 dark:bg-white/10">
                                 <i class="fa-solid fa-mobile-screen text-brand-600 dark:text-brand-200" aria-hidden="true"></i>
-                                <span class="text-sm font-semibold tabular-nums">{{ $wave['number'] }}</span>
+                                <span class="text-sm font-semibold tabular-nums whitespace-nowrap">{{ $wave['number'] }}</span>
                             </div>
                             <a href="{{ route('abonnement.index') }}" class="cf-btn-accent flex-1">
                                 <i class="fa-solid fa-cloud-arrow-up" aria-hidden="true"></i>

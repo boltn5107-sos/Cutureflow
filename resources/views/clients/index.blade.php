@@ -171,13 +171,13 @@
                         </div>
                     </dl>
 
-                    <div class="mt-auto flex items-center justify-between gap-2 border-t border-brand-100 pt-3 dark:border-white/5">
+                    <div class="mt-auto flex flex-wrap items-center justify-between gap-2 border-t border-brand-100 pt-3 dark:border-white/5">
                         <span class="flex items-center gap-1.5 text-xs text-brand-600 dark:text-brand-300">
                             <i class="fa-solid fa-scissors" aria-hidden="true"></i>
                             {{ $client->commandes_count }} commande(s)
                         </span>
 
-                        <span class="text-xs font-medium text-brand-600 dark:text-brand-300">
+                        <span class="text-xs font-medium text-brand-600 dark:text-brand-300 whitespace-nowrap">
                             Voir la fiche
                             <i class="fa-solid fa-arrow-right ml-1" aria-hidden="true"></i>
                         </span>

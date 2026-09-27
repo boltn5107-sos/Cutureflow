@@ -17,17 +17,17 @@
         :back="route('clients.index')"
     >
         <x-slot:actions>
-            <a href="{{ route('commandes.create', ['client_id' => $client->id]) }}" class="cf-btn-primary">
+            <a href="{{ route('commandes.create', ['client_id' => $client->id]) }}" class="cf-btn-primary w-full sm:w-auto mb-2 sm:mb-0 cf-btn-sm">
                 <i class="fa-solid fa-scissors" aria-hidden="true"></i>
                 Nouvelle commande
             </a>
 
-            <a href="{{ route('mesures.index', $client) }}" class="cf-btn-secondary">
+            <a href="{{ route('mesures.index', $client) }}" class="cf-btn-secondary w-full sm:w-auto mb-2 sm:mb-0 cf-btn-sm">
                 <i class="fa-solid fa-ruler" aria-hidden="true"></i>
                 Prendre des mesures
             </a>
 
-            <a href="{{ route('clients.edit', $client) }}" class="cf-btn-secondary">
+            <a href="{{ route('clients.edit', $client) }}" class="cf-btn-secondary w-full sm:w-auto mb-2 sm:mb-0 cf-btn-sm">
                 <i class="fa-solid fa-pen" aria-hidden="true"></i>
                 Modifier
             </a>
@@ -37,7 +37,7 @@
                 title="Supprimer le client"
                 :message="'La fiche de '.$client->nom.' sera définitivement supprimée. Continuer ?'"
                 label="Supprimer"
-                class="cf-btn-danger"
+                class="cf-btn-danger w-full sm:w-auto mb-2 sm:mb-0 cf-btn-sm"
             />
         </x-slot:actions>
     </x-page-header>

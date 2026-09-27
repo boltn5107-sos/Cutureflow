@@ -136,19 +136,19 @@
                     />
                 @else
                     <div class="overflow-x-auto">
-                        <table class="cf-table">
-                            <thead>
-                                <tr>
-                                    <th>Numéro</th>
-                                    <th>Client</th>
-                                    <th>Statut</th>
-                                    <th class="text-right">Solde</th>
-                                </tr>
-                            </thead>
+                            <table class="cf-table min-w-max">
+                                <thead>
+                                    <tr>
+                                        <th class="min-w-[100px]">Numéro</th>
+                                        <th class="min-w-[120px]">Client</th>
+                                        <th class="min-w-[100px]">Statut</th>
+                                        <th class="text-right min-w-[100px]">Solde</th>
+                                    </tr>
+                                </thead>
                             <tbody>
                                 @foreach ($dernieresCommandes as $commande)
-                                    <tr>
-                                        <td>
+                                    <tr class="hover:bg-brand-50/40 dark:hover:bg-white/[0.03]">
+                                        <td class="whitespace-nowrap">
                                             <a href="{{ route('commandes.show', $commande) }}" class="cf-link font-semibold">
                                                 {{ $commande->numero }}
                                             </a>
@@ -156,13 +156,13 @@
                                                 {{ $commande->date_commande->format('d/m/Y') }}
                                             </span>
                                         </td>
-                                        <td>
+                                        <td class="whitespace-nowrap">
                                             <span class="font-medium">{{ $commande->client?->nom ?? '—' }}</span>
                                             @if ($commande->tissu)
                                                 <span class="block text-xs text-brand-500">{{ $commande->tissu }}</span>
                                             @endif
                                         </td>
-                                        <td>
+                                        <td class="whitespace-nowrap">
                                             <span class="cf-badge {{ $commande->statutBadgeClass() }}">
                                                 <i class="{{ $commande->getStatutEnum()->icon() }} text-[0.7em]" aria-hidden="true"></i>
                                                 {{ $commande->statutLabel() }}
@@ -173,7 +173,7 @@
                                                 </span>
                                             @endif
                                         </td>
-                                        <td class="text-right tabular-nums">
+                                        <td class="text-right tabular-nums whitespace-nowrap">
                                             @if ((float) $commande->solde > 0)
                                                 <span class="font-semibold text-brand-accent">
                                                     {{ number_format((float) $commande->solde, 0, ',', ' ') }}

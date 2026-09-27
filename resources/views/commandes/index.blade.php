@@ -148,104 +148,104 @@
             />
         @else
             <div class="overflow-x-auto">
-                <table class="cf-table">
+                <table class="cf-table sm:min-w-64">
                     <caption class="sr-only">Liste des commandes de l'atelier</caption>
-                    <thead>
-                        <tr>
-                            <th scope="col">Numéro</th>
-                            <th scope="col">Client / Modèle</th>
-                            <th scope="col">Tissu</th>
-                            <th scope="col">Statut</th>
-                            <th scope="col">Commande</th>
-                            <th scope="col">Livraison prévue</th>
-                            <th scope="col" class="text-right">Financier</th>
-                            <th scope="col" class="text-right">Action</th>
-                        </tr>
-                    </thead>
+<thead>
+<tr>
+<th scope="col" class="sm:text-xs sm:px-2 sm:py-1">Numéro</th>
+<th scope="col" class="sm:text-xs sm:px-2 sm:py-1">Client / Modèle</th>
+<th scope="col" class="sm:text-xs sm:px-2 sm:py-1">Tissu</th>
+<th scope="col" class="sm:text-xs sm:px-2 sm:py-1">Statut</th>
+<th scope="col" class="sm:text-xs sm:px-2 sm:py-1">Commande</th>
+<th scope="col" class="sm:text-xs sm:px-2 sm:py-1">Livraison prévue</th>
+<th scope="col" class="text-right sm:text-xs sm:px-2 sm:py-1">Financier</th>
+<th scope="col" class="text-right sm:text-xs sm:px-2 sm:py-1">Action</th>
+</tr>
+</thead>
                     <tbody>
-                        @foreach ($commandes as $commande)
-                            @php $enRetard = $commande->estEnRetard(); @endphp
+                            @foreach ($commandes as $commande)
+                                @php $enRetard = $commande->estEnRetard(); @endphp
 
-                            <tr>
-                                <td>
-                                    <a href="{{ route('commandes.show', $commande) }}" class="cf-link font-semibold">
-                                        {{ $commande->numero }}
-                                    </a>
-                                </td>
-
-                                <td>
-                                    @if ($commande->client)
-                                        <a href="{{ route('clients.show', $commande->client) }}" class="font-medium hover:underline">
-                                            {{ $commande->client->nom }}
+                                <tr>
+                                    <td class="sm:px-2 sm:py-1.5">
+                                        <a href="{{ route('commandes.show', $commande) }}" class="cf-link font-semibold text-sm">
+                                            {{ $commande->numero }}
                                         </a>
-                                    @else
-                                        <span class="font-medium">—</span>
-                                    @endif
+                                    </td>
 
-                                    @if ($commande->modele)
-                                        <a href="{{ route('modeles.show', $commande->modele) }}" class="block text-xs text-brand-500 hover:underline">
-                                            {{ $commande->modele->nom }}
+                                    <td class="sm:px-2 sm:py-1.5">
+                                        @if ($commande->client)
+                                            <a href="{{ route('clients.show', $commande->client) }}" class="font-medium hover:underline text-sm">
+                                                {{ $commande->client->nom }}
+                                            </a>
+                                        @else
+                                            <span class="font-medium text-sm">—</span>
+                                        @endif
+
+                                        @if ($commande->modele)
+                                            <a href="{{ route('modeles.show', $commande->modele) }}" class="block text-xs text-brand-500 hover:underline">
+                                                {{ $commande->modele->nom }}
+                                            </a>
+                                        @endif
+                                    </td>
+
+                                    <td class="text-xs sm:px-2 sm:py-1.5">{{ $commande->tissu ?: '—' }}</td>
+
+                                    <td class="sm:px-2 sm:py-1.5">
+                                        <span class="cf-badge {{ $commande->statutBadgeClass() }}">
+                                            <i class="{{ $commande->getStatutEnum()->icon() }} text-[0.7em]" aria-hidden="true"></i>
+                                            {{ $commande->statutLabel() }}
+                                        </span>
+
+                                        @if ($enRetard)
+                                            <span class="mt-1 block text-xs font-medium text-red-600 dark:text-red-400">
+                                                {{ $commande->joursDeRetard() }} j de retard
+                                            </span>
+                                        @endif
+                                    </td>
+
+                                    <td class="whitespace-nowrap tabular-nums sm:px-2 sm:py-1.5 text-sm">
+                                        {{ $commande->date_commande?->format('d/m/Y') ?? '—' }}
+                                    </td>
+
+                                    <td class="whitespace-nowrap tabular-nums {{ $enRetard ? 'font-semibold text-red-600 dark:text-red-400' : '' }} sm:px-2 sm:py-1.5 text-sm">
+                                        {{ $commande->date_livraison_prevue?->format('d/m/Y') ?? '—' }}
+                                    </td>
+
+                                    <td class="text-right tabular-nums sm:px-2 sm:py-1.5">
+                                        <span class="block font-semibold text-sm">
+                                            {{ number_format((float) $commande->prix_total, 0, ',', ' ') }}
+                                            <span class="text-[0.65rem] font-normal text-brand-500 dark:text-brand-400">{{ $devise }}</span>
+                                        </span>
+                                        <span class="block text-xs text-brand-500 dark:text-brand-400">
+                                            Avance : {{ number_format((float) $commande->avance, 0, ',', ' ') }} {{ $devise }}
+                                        </span>
+
+                                        @if ($commande->estSoldePaye())
+                                            <span class="mt-0.5 inline-flex items-center gap-1 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+                                                <i class="fa-solid fa-check" aria-hidden="true"></i>
+                                                Payé
+                                            </span>
+                                        @else
+                                            <span class="mt-0.5 block text-xs font-semibold text-brand-accent">
+                                                Solde : {{ number_format((float) $commande->solde, 0, ',', ' ') }} {{ $devise }}
+                                            </span>
+                                        @endif
+                                    </td>
+
+                                    <td class="text-right sm:px-2 sm:py-1.5">
+                                        <a
+                                            href="{{ route('commandes.edit', $commande) }}"
+                                            class="cf-btn-secondary cf-btn-sm"
+                                            aria-label="Modifier la commande {{ $commande->numero }}"
+                                        >
+                                            <i class="fa-solid fa-pen" aria-hidden="true"></i>
+                                            Modifier
                                         </a>
-                                    @endif
-                                </td>
-
-                                <td class="text-xs">{{ $commande->tissu ?: '—' }}</td>
-
-                                <td>
-                                    <span class="cf-badge {{ $commande->statutBadgeClass() }}">
-                                        <i class="{{ $commande->getStatutEnum()->icon() }} text-[0.7em]" aria-hidden="true"></i>
-                                        {{ $commande->statutLabel() }}
-                                    </span>
-
-                                    @if ($enRetard)
-                                        <span class="mt-1 block text-xs font-medium text-red-600 dark:text-red-400">
-                                            {{ $commande->joursDeRetard() }} j de retard
-                                        </span>
-                                    @endif
-                                </td>
-
-                                <td class="whitespace-nowrap tabular-nums">
-                                    {{ $commande->date_commande?->format('d/m/Y') ?? '—' }}
-                                </td>
-
-                                <td class="whitespace-nowrap tabular-nums {{ $enRetard ? 'font-semibold text-red-600 dark:text-red-400' : '' }}">
-                                    {{ $commande->date_livraison_prevue?->format('d/m/Y') ?? '—' }}
-                                </td>
-
-                                <td class="text-right tabular-nums">
-                                    <span class="block font-semibold">
-                                        {{ number_format((float) $commande->prix_total, 0, ',', ' ') }}
-                                        <span class="text-[0.65rem] font-normal text-brand-500 dark:text-brand-400">{{ $devise }}</span>
-                                    </span>
-                                    <span class="block text-xs text-brand-500 dark:text-brand-400">
-                                        Avance : {{ number_format((float) $commande->avance, 0, ',', ' ') }} {{ $devise }}
-                                    </span>
-
-                                    @if ($commande->estSoldePaye())
-                                        <span class="mt-0.5 inline-flex items-center gap-1 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
-                                            <i class="fa-solid fa-check" aria-hidden="true"></i>
-                                            Payé
-                                        </span>
-                                    @else
-                                        <span class="mt-0.5 block text-xs font-semibold text-brand-accent">
-                                            Solde : {{ number_format((float) $commande->solde, 0, ',', ' ') }} {{ $devise }}
-                                        </span>
-                                    @endif
-                                </td>
-
-                                <td class="text-right">
-                                    <a
-                                        href="{{ route('commandes.edit', $commande) }}"
-                                        class="cf-btn-secondary cf-btn-sm"
-                                        aria-label="Modifier la commande {{ $commande->numero }}"
-                                    >
-                                        <i class="fa-solid fa-pen" aria-hidden="true"></i>
-                                        Modifier
-                                    </a>
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
                 </table>
             </div>
 

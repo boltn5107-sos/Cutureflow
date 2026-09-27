@@ -122,7 +122,7 @@
                             regroupement par zone du corps est détaillé dans
                             l'encart « Catalogue des mesures », à droite.
                         --}}
-                        <div class="grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-4">
+                        <div class="grid grid-cols-2 gap-2 md:grid-cols-3 lg:grid-cols-4">
                             @foreach ($catalogueParCode as $code => $entree)
                                 {{--
                                     Les couleurs de la tuile sont entièrement pilotées par
@@ -130,16 +130,16 @@
                                     Mélanger les deux ferait dépendre l'état retenu de
                                     l'ordre d'émission des utilitaires Tailwind.
                                 --}}
-                                <button
-                                    type="button"
-                                    class="flex min-h-16 flex-col items-center justify-center gap-1.5 rounded-xl border px-2 py-2.5 text-center transition focus-visible:ring-2 focus-visible:ring-brand-accent focus-visible:ring-offset-1 focus-visible:outline-none dark:focus-visible:ring-offset-brand-dark"
-                                    x-on:click="basculer(@js($code))"
-                                    x-bind:aria-pressed="contient(@js($code)) ? 'true' : 'false'"
-                                    x-bind:class="contient(@js($code))
-                                        ? 'border-brand-accent bg-brand-accent/10'
-                                        : 'border-brand-200 bg-white hover:border-brand-400 hover:bg-brand-50 dark:border-white/10 dark:bg-white/5 dark:hover:border-brand-500/60'"
-                                    title="{{ $entree['zone'] }} — {{ $entree['libelle'] }}"
-                                >
+<button
+                                     type="button"
+                                     class="flex min-h-16 flex-col items-center justify-center gap-1.5 rounded-xl border px-2 py-2.5 text-center transition focus-visible:ring-2 focus-visible:ring-brand-accent focus-visible:ring-offset-1 focus-visible:outline-none dark:focus-visible:ring-offset-brand-dark"
+                                     x-on:click="basculer(@js($code)); document.getElementById('valeur-' + @js($code))?.focus()"
+                                     x-bind:aria-pressed="contient(@js($code)) ? 'true' : 'false'"
+                                     x-bind:class="contient(@js($code))
+                                         ? 'border-brand-accent bg-brand-accent/10'
+                                         : 'border-brand-200 bg-white hover:border-brand-400 hover:bg-brand-50 dark:border-white/10 dark:bg-white/5 dark:hover:border-brand-500/60'"
+                                     title="{{ $entree['zone'] }} — {{ $entree['libelle'] }}"
+                                 >
                                     <i
                                         class="fa-solid {{ $entree['icone'] }} text-lg"
                                         :class="contient(@js($code)) ? 'text-brand-accent' : 'text-brand-500 dark:text-brand-300'"
@@ -641,15 +641,15 @@
                                                     >
                                                 </div>
 
-                                                <div class="flex flex-wrap items-center gap-2 sm:col-span-6">
-                                                    <button type="submit" class="cf-btn-primary">
+                                                <div class="flex flex-wrap items-center justify-center gap-2 sm:col-span-6">
+                                                    <button type="submit" class="cf-btn-primary w-full sm:w-auto mb-2 sm:mb-0 cf-btn-sm">
                                                         <i class="fa-solid fa-check" aria-hidden="true"></i>
                                                         Enregistrer
                                                     </button>
 
                                                     <button
                                                         type="button"
-                                                        class="cf-btn-secondary"
+                                                        class="cf-btn-secondary w-full sm:w-auto mb-2 sm:mb-0 cf-btn-sm"
                                                         x-on:click="editing = false"
                                                     >
                                                         <i class="fa-solid fa-xmark" aria-hidden="true"></i>

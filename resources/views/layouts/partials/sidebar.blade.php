@@ -29,7 +29,9 @@
 @endphp
 
 <aside
-    class="sticky top-0 hidden h-screen w-72 shrink-0 border-r border-brand-200/70 bg-white lg:flex lg:flex-col dark:border-white/10 dark:bg-brand-dark"
+    x-data="{}"
+    class="fixed inset-y-0 left-0 z-40 w-72 shrink-0 border-r border-brand-200/70 bg-white transition-transform duration-300 dark:border-white/10 dark:bg-brand-dark"
+    :class="$store.sidebar.open ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'"
     aria-label="Navigation principale"
 >
     <div class="flex h-16 items-center gap-2.5 border-b border-brand-200/70 px-6 dark:border-white/10">
@@ -62,6 +64,7 @@
                             <a
                                 href="{{ route($item['route']) }}"
                                 @if ($active) aria-current="page" @endif
+                                @click="$store.sidebar.open = false"
                                 class="group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition
                                     {{ $active
                                         ? 'bg-brand-800 text-brand-50 dark:bg-brand-400 dark:text-brand-900'

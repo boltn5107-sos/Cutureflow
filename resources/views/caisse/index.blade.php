@@ -239,34 +239,34 @@
                     />
                 @else
                     <div class="overflow-x-auto">
-                        <table class="cf-table">
+                        <table class="cf-table min-w-max">
                             <caption class="sr-only">Paiements enregistrés dans la caisse</caption>
                             <thead>
                                 <tr>
-                                    <th scope="col">Date</th>
-                                    <th scope="col">Type</th>
-                                    <th scope="col">Commande</th>
-                                    <th scope="col">Client</th>
-                                    <th scope="col">Méthode</th>
-                                    <th scope="col" class="text-right">Montant</th>
-                                    <th scope="col">Description</th>
-                                    <th scope="col" class="text-right">Action</th>
+                                    <th class="whitespace-nowrap text-left font-medium text-xs uppercase text-brand-600 dark:text-brand-300">Date</th>
+                                    <th class="whitespace-nowrap text-left font-medium text-xs uppercase text-brand-600 dark:text-brand-300">Type</th>
+                                    <th class="whitespace-nowrap text-left font-medium text-xs uppercase text-brand-600 dark:text-brand-300">Commande</th>
+                                    <th class="whitespace-nowrap text-left font-medium text-xs uppercase text-brand-600 dark:text-brand-300">Client</th>
+                                    <th class="whitespace-nowrap text-left font-medium text-xs uppercase text-brand-600 dark:text-brand-300">Méthode</th>
+                                    <th class="whitespace-nowrap text-right font-medium text-xs uppercase text-brand-600 dark:text-brand-300">Montant</th>
+                                    <th class="whitespace-nowrap text-left font-medium text-xs uppercase text-brand-600 dark:text-brand-300">Description</th>
+                                    <th class="whitespace-nowrap text-right font-medium text-xs uppercase text-brand-600 dark:text-brand-300">Action</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach ($paiements as $paiement)
                                     @php $nomClient = $paiement->client?->nom ?? $paiement->commande?->client?->nom; @endphp
 
-                                    <tr>
+                                    <tr class="hover:bg-brand-50/40 dark:hover:bg-white/[0.03]">
                                         <td class="whitespace-nowrap tabular-nums">
                                             {{ $paiement->date_paiement?->format('d/m/Y') ?? '—' }}
                                         </td>
-                                        <td>
+                                        <td class="whitespace-nowrap">
                                             <span class="cf-badge {{ $paiement->typeBadgeClass() }}">
                                                 {{ $paiement->typeLabel() }}
                                             </span>
                                         </td>
-                                        <td>
+                                        <td class="whitespace-nowrap">
                                             @if ($paiement->commande)
                                                 <a href="{{ route('commandes.show', $paiement->commande) }}" class="cf-link font-semibold">
                                                     {{ $paiement->commande->numero }}
@@ -275,7 +275,7 @@
                                                 <span class="text-brand-400">—</span>
                                             @endif
                                         </td>
-                                        <td>
+                                        <td class="whitespace-nowrap">
                                             @if ($paiement->client)
                                                 <a href="{{ route('clients.show', $paiement->client) }}" class="hover:underline">
                                                     {{ $paiement->client->nom }}
@@ -286,13 +286,13 @@
                                                 <span class="text-brand-400">—</span>
                                             @endif
                                         </td>
-                                        <td>
-                                            <span class="flex items-center gap-1.5 whitespace-nowrap">
+                                        <td class="whitespace-nowrap">
+                                            <span class="flex items-center gap-1.5">
                                                 <i class="{{ $paiement->methodeIcon() }} w-4 text-center text-brand-400" aria-hidden="true"></i>
                                                 {{ $paiement->methodeLabel() }}
                                             </span>
                                         </td>
-                                        <td class="text-right font-semibold tabular-nums">
+                                        <td class="text-right font-semibold tabular-nums whitespace-nowrap">
                                             {{ number_format((float) $paiement->montant, 0, ',', ' ') }} {{ $devise }}
                                         </td>
                                         <td class="max-w-xs text-xs">
@@ -301,7 +301,7 @@
                                             @endif
                                             <span class="line-clamp-2">{{ $paiement->description ?: '—' }}</span>
                                         </td>
-                                        <td class="text-right">
+                                        <td class="text-right whitespace-nowrap">
                                             <a
                                                 href="{{ route('caisse.paiements.show', $paiement) }}"
                                                 class="cf-btn-secondary cf-btn-sm"
