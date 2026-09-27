@@ -2,9 +2,16 @@
 
 @section('title', 'Tableau de bord')
 @section('header_title', 'Tableau de bord')
-@section('header_subtitle', $indicateurs['from']->translatedFormat('F Y').' — '.$indicateurs['to']->translatedFormat('F Y'))
+@section('header_subtitle', $indicateurs['from']->translatedFormat('F Y'))
 
 @section('content')
+    {{--
+        Le filtre de dates a été retiré : le tableau de bord reflète toujours
+        le mois en cours. Les cartes affectedes par la période sont
+        calculées par DashboardService::indicateurs(), qui accepte toujours
+        deux bornes — la caisse et les dépenses ont conservé leur propre
+        filtre « Du / Au ».
+    --}}
     <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div class="min-w-0">
             <h1 class="font-serif text-2xl font-semibold tracking-tight sm:text-3xl">
@@ -14,33 +21,6 @@
                 Voici l'état de {{ auth()->user()->atelier?->nom }} au {{ now()->translatedFormat('l j F Y') }}.
             </p>
         </div>
-
-        <form method="GET" action="{{ route('dashboard') }}" class="flex flex-wrap items-center gap-2">
-            <x-form.text
-                name="from"
-                type="date"
-                input-class="!w-auto text-xs"
-                :value="$filtres['from'] ?? $indicateurs['from']->toDateString()"
-                aria-label="Date de début"
-            />
-            <span class="text-brand-400" aria-hidden="true">→</span>
-            <x-form.text
-                name="to"
-                type="date"
-                input-class="!w-auto text-xs"
-                :value="$filtres['to'] ?? $indicateurs['to']->toDateString()"
-                aria-label="Date de fin"
-            />
-            <button type="submit" class="cf-btn-secondary cf-btn-sm">
-                <i class="fa-solid fa-filter" aria-hidden="true"></i>
-                Filtrer
-            </button>
-            @if (! empty($filtres['from']) || ! empty($filtres['to']))
-                <a href="{{ route('dashboard') }}" class="cf-btn-ghost cf-btn-sm" title="Réinitialiser">
-                    <i class="fa-solid fa-rotate-left" aria-hidden="true"></i>
-                </a>
-            @endif
-        </form>
     </div>
 
     @if ($indicateurs['commandes_en_retard'] > 0)

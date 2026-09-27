@@ -5,22 +5,24 @@ namespace App\Http\Controllers;
 use App\Services\DashboardService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
-use Illuminate\Support\Carbon;
 
 class DashboardController extends Controller
 {
+    /**
+     * Le tableau de bord porte toujours sur le mois en cours : le filtre de
+     * dates a été retiré de l'interface. La lecture des paramètres « from »
+     * et « to » a disparu avec lui, ainsi que le risque de Carbon::parse
+     * sur une date non valide.
+     *
+     * DashboardService::indicateurs() conserve ses deux bornes facultatives,
+     * utilisées par la caisse et les dépenses qui ont leur propre filtre.
+     */
     public function index(Request $request): View
     {
         $service = DashboardService::for($request->user());
 
-        $from = $request->filled('from') ? Carbon::parse($request->string('from')) : null;
-        $to = $request->filled('to') ? Carbon::parse($request->string('to')) : null;
-
         return view('dashboard.index', [
-            'indicateurs' => $service->indicateurs(
-                $from?->toDateString(),
-                $to?->toDateString(),
-            ),
+            'indicateurs' => $service->indicateurs(),
             'dernieresCommandes' => $service->dernieresCommandes(),
             'prochainesLivraisons' => $service->commandesALivrerProchainement(),
             'commandesEnRetard' => $service->commandesEnRetard(),
@@ -28,7 +30,6 @@ class DashboardController extends Controller
             'evolution' => $service->evolutionFinanciere(),
             'activite' => $service->activiteRecente(),
             'topClients' => $service->topClients(),
-            'filtres' => $request->only('from', 'to'),
         ]);
     }
 }

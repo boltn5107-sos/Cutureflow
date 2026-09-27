@@ -80,7 +80,6 @@ class ClientController extends Controller
             'client' => $client,
             'paiements' => $client->paiements()->limit(10)->get(),
             'rendezVous' => $client->rendezVous()->limit(5)->get(),
-            'mesuresCourantes' => config('coutureflow.mesures_courantes', []),
         ]);
     }
 

@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use App\Http\Requests\MesureRequest;
 use App\Models\Client;
 use App\Models\Mesure;
@@ -10,6 +9,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 
 class MesureController extends Controller
 {
@@ -55,31 +55,36 @@ class MesureController extends Controller
             'mesures' => $mesures,
             'historique' => $historique,
             'mesuresComparees' => $mesuresComparees,
-            'mesuresCourantes' => config('coutureflow.mesures_courantes', []),
-            'mesuresParDefaut' => config('coutureflow.mesures_par_defaut', []),
+            'catalogue' => Mesure::catalogue(),
             'unites' => config('coutureflow.unites_mesure', ['cm' => 'Centimètres (cm)']),
+            'uniteParDefaut' => config('coutureflow.unite_mesure_par_defaut', 'cm'),
             'filtres' => $request->only('q', 'categorie'),
         ]);
     }
 
     public function store(MesureRequest $request, Client $client): RedirectResponse
     {
-        $mesuresCourantes = config('coutureflow.mesures_courantes', []);
+        $uniteParDefaut = config('coutureflow.unite_mesure_par_defaut', 'cm');
 
-        $enregistrees = DB::transaction(function () use ($client, $request, $mesuresCourantes) {
+        /*
+         * Le code et la catégorie ne sont jamais repris du formulaire : ils
+         * sont déduits du catalogue à partir du code choisi. Un champ
+         * manipulé ne peut donc pas rattacher une mesure à une zone du corps
+         * qui n'existe pas, ni à un intitulé arbitraire.
+         */
+        $enregistrees = DB::transaction(function () use ($client, $request, $uniteParDefaut) {
             $ids = [];
 
             foreach ($request->validated('mesures') as $ligne) {
-                $libelle = trim((string) $ligne['libelle']);
+                $entree = Mesure::entreeParCode($ligne['code'] ?? null);
 
                 $mesure = $client->mesures()->create([
-                    'libelle' => $libelle,
+                    'code' => $entree['code'] ?? null,
+                    'libelle' => $entree['libelle'] ?? trim((string) $ligne['libelle']),
+                    'categorie' => $entree['categorie'] ?? null,
                     'valeur' => $ligne['valeur'],
-                    'unite' => $ligne['unite'] ?: 'cm',
-                    'categorie' => $request->input('categorie')
-                        ?: ($mesuresCourantes[$libelle]['categorie'] ?? null),
+                    'unite' => $ligne['unite'] ?: $uniteParDefaut,
                     'date_mesure' => $request->date('date_mesure'),
-                    'commande_id' => $request->input('commande_id'),
                     'commentaire' => $request->input('commentaire'),
                     'created_by' => $request->user()->id,
                 ]);
@@ -105,15 +110,16 @@ class MesureController extends Controller
         $this->authorize('update', $mesure);
 
         $validated = $request->validate([
-            'libelle' => ['required', 'string', 'max:120'],
+            'code' => ['nullable', 'string', 'max:60'],
+            'libelle' => ['nullable', 'string', 'max:120', 'required_without:code'],
             'valeur' => ['required', 'numeric', 'min:0', 'max:9999.99'],
-            'unite' => ['nullable', 'string', 'max:12'],
-            'categorie' => ['nullable', 'string', 'max:60'],
+            'unite' => ['nullable', 'string', Rule::in(array_keys(config('coutureflow.unites_mesure', ['cm' => ''])))],
             'date_mesure' => ['required', 'date', 'before_or_equal:today', 'after:2000-01-01'],
             'commentaire' => ['nullable', 'string', 'max:1000'],
         ], messages: [
-            'libelle.required' => 'Indiquez le nom de la mesure.',
+            'libelle.required_without' => 'Indiquez le nom de la mesure.',
             'valeur.required' => 'Indiquez la valeur mesurée.',
+            'unite.in' => 'L\'unité sélectionnée n\'est pas reconnue.',
             'date_mesure.before_or_equal' => 'La date de mesure ne peut pas être dans le futur.',
         ], attributes: [
             'libelle' => 'mesure',
@@ -121,9 +127,25 @@ class MesureController extends Controller
             'date_mesure' => 'date de mesure',
         ]);
 
-        $mesure->update($validated);
+        /*
+         * Même règle qu'à la création : le code choisi dans le catalogue
+         * entraîne l'intitulé et la zone du corps. Le champ « libelle » reste
+         * validé pour les mesures qui n'appartiennent à aucune entrée du
+         * catalogue, que le formulaire propose alors en saisie libre.
+         */
+        $entree = Mesure::entreeParCode($validated['code'] ?? null);
 
-        return back()->with('success', "La mesure « {$validated['libelle']} » a été mise à jour.");
+        $mesure->update([
+            'code' => $entree['code'] ?? null,
+            'libelle' => $entree['libelle'] ?? $validated['libelle'],
+            'categorie' => $entree['categorie'] ?? null,
+            'valeur' => $validated['valeur'],
+            'unite' => $validated['unite'] ?: config('coutureflow.unite_mesure_par_defaut', 'cm'),
+            'date_mesure' => $validated['date_mesure'],
+            'commentaire' => $validated['commentaire'] ?? null,
+        ]);
+
+        return back()->with('success', "La mesure « {$mesure->libelle} » a été mise à jour.");
     }
 
     public function destroy(Mesure $mesure): RedirectResponse

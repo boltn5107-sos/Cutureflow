@@ -1,9 +1,24 @@
 /* Polices : Inter (textes) et Playfair Display (titres) */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap');
 
-@import 'tailwindcss';
+/*
+ * FontAwesome doit être EMPILÉ, et déclaré AVANT les couches de Tailwind.
+ *
+ * Sans cela, sa règle « .fa-solid { display: inline-block } » reste hors
+ * couche. En CSS, une règle d'auteur non empilée l'emporte toujours sur
+ * une règle empilée, quelle que soit sa spécificité : elle écrasait donc
+ * « hidden », « dark:hidden » et « dark:inline », et les deux icônes du
+ * bouton de thème restaient visibles en même temps.
+ *
+ * L'ordre compte autant que l'empilement : une couche déclarée plus tard
+ * l'emporte sur une couche déclarée plus tôt. FontAwesome doit donc passer
+ * en PREMIER, pour que les utilitaires de Tailwind le repassent en dernier
+ * et reprennent la main sur « display ».
+ */
+@layer fontawesome;
+@import '@fortawesome/fontawesome-free/css/all.min.css' layer(fontawesome);
 
-@import '@fortawesome/fontawesome-free/css/all.min.css';
+@import 'tailwindcss';
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
@@ -101,9 +116,17 @@
    par @apply dans les variantes ci-dessous. */
 
 @utility cf-input {
-    @apply block w-full rounded-lg border border-brand-200 bg-white px-3.5 py-2.5 text-sm text-brand-900 placeholder-brand-400 transition
+    /*
+     * text-base puis sm:text-sm : iOS et Android zooment automatiquement
+     * sur un champ focalisé dont la police est inférieure à 16 px, ce qui
+     * décalait l'écran à chaque saisie. 16 px sur mobile, 14 px sur grand
+     * écran, sans quoi la moitié des formulaires de l'application était
+     * pénible à remplir au téléphone.
+     */
+    @apply block w-full rounded-lg border border-brand-200 bg-white px-3.5 py-2.5 text-base text-brand-900 placeholder-brand-400 transition
         focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 focus:outline-none
         disabled:cursor-not-allowed disabled:bg-brand-50 disabled:text-brand-400
+        sm:text-sm
         dark:border-white/10 dark:bg-white/5 dark:text-brand-50 dark:placeholder-brand-300;
 }
 

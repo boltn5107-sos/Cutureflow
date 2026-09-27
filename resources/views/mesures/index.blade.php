@@ -6,14 +6,34 @@
 
 @section('content')
     @php
+        use App\Models\Mesure;
+
         $aujourdhui = now()->toDateString();
-        $libellesSuggeres = array_keys($mesuresCourantes);
-        $categoriesCourantes = collect($mesuresCourantes)
-            ->pluck('categorie')
-            ->filter()
+
+        /*
+         * Le catalogue est groupé par zone du corps pour l'affichage, et
+         * aplati par code pour la logique Alpine : un code est la clé qui relie
+         * une icône cliquée à la ligne réellement enregistrée.
+         */
+        $catalogueParCode = [];
+
+        foreach ($catalogue as $zone => $entrees) {
+            foreach ($entrees as $entree) {
+                $catalogueParCode[$entree['code']] = $entree + ['zone' => $zone];
+            }
+        }
+
+        /*
+         * Le filtre par zone propose les zones du catalogue, complétées par
+         * celles présentes dans l'historique : les relevés saisis avant la
+         * création du catalogue portent encore des libellés d'ancienne
+         * catégorie (« Manches », « Bas »), qui doivent rester filtrables.
+         */
+        $categoriesFiltre = collect(array_keys($catalogue))
+            ->merge($historique->map(fn ($entree) => $entree['mesure']->categorie)->filter())
             ->unique()
-            ->sort()
-            ->values();
+            ->values()
+            ->all();
 
         $filtreActif = collect($filtres)->filter(fn ($valeur) => $valeur !== null && $valeur !== '')->isNotEmpty();
 
@@ -44,135 +64,207 @@
     </x-page-header>
 
     @php
-        // Une ligne déjà saisie est renvoyée par le validateur, sinon on
-        // repart des quatre mesures proposées au tailleur.
-        $lignesAnciennes = old('mesures');
-        $lignesInitiales = is_array($lignesAnciennes) && $lignesAnciennes !== []
-            ? $lignesAnciennes
-            : array_map(
-                fn (string $libelle) => ['libelle' => $libelle, 'valeur' => '', 'unite' => 'cm'],
-                $mesuresParDefaut,
-            );
+        /*
+         * Après un échec de validation, l'utilisateur retrouve exactement les
+         * icônes qu'il avait sélectionnées, y compris celles laissées sans
+         * valeur. Les lignes sont rattachées au catalogue par leur code, ou à
+         * défaut par leur intitulé, ce qui préserve aussi les mesures issues
+         * d'une version antérieure du formulaire.
+         */
+        $lignesRenvoyees = old('mesures');
+        $lignesInitiales = collect(is_array($lignesRenvoyees) ? $lignesRenvoyees : [])
+            ->filter(fn ($ligne) => is_array($ligne) && (
+                filled($ligne['code'] ?? null)
+                || filled($ligne['libelle'] ?? null)
+                || filled($ligne['valeur'] ?? null)
+            ))
+            ->map(function ($ligne) use ($uniteParDefaut) {
+                $entree = Mesure::entreeParCode($ligne['code'] ?? null)
+                    ?? Mesure::entreeParLibelle($ligne['libelle'] ?? null);
+
+                return [
+                    'code' => $entree['code'] ?? null,
+                    'libelle' => $entree['libelle'] ?? ($ligne['libelle'] ?? ''),
+                    'valeur' => $ligne['valeur'] ?? '',
+                    'unite' => $ligne['unite'] ?? $uniteParDefaut,
+                ];
+            })
+            ->values()
+            ->all();
     @endphp
 
     <div
         class="grid gap-6 lg:grid-cols-3"
-        x-data="{
-            categorie: @js(old('categorie', '')),
-            lignes: @js($lignesInitiales),
-            ajouter() {
-                this.lignes.push({ libelle: '', valeur: '', unite: 'cm' });
-            },
-            ajouterMesure(libelle, categorie) {
-                this.lignes.push({ libelle: libelle, valeur: '', unite: 'cm' });
-                this.categorie = categorie;
-            },
-            retirer(index) {
-                this.lignes.splice(index, 1);
-            },
-        }"
+        x-data="mesureForm(@js($catalogueParCode), @js($lignesInitiales), @js($uniteParDefaut))"
     >
         <div class="space-y-6 lg:col-span-2">
             {{-- Formulaire d'ajout --}}
             <section class="cf-card overflow-hidden">
                 <div class="cf-card-header">
-                    <h2 class="font-serif text-lg font-semibold">Ajouter une mesure</h2>
-                    <span class="text-xs text-brand-500">
-                        <span class="text-brand-accent" aria-hidden="true">*</span> champs obligatoires
+                    <h2 class="font-serif text-lg font-semibold">Ajouter des mesures</h2>
+                    <span class="text-xs text-brand-500 dark:text-brand-400">
+                        Touchez les mesures à relever
                     </span>
                 </div>
 
                 <form method="POST" action="{{ route('mesures.store', $client) }}">
                     @csrf
 
-                    <div class="space-y-3 p-5 sm:p-6">
-                        <div class="flex flex-wrap items-center justify-between gap-2">
-                            <p class="text-sm text-brand-700 dark:text-brand-200">
-                                Quatre mesures sont proposées. Renommez-les librement et ajoutez-en
-                                d'autres si nécessaire.
-                            </p>
+                    <div class="space-y-5 p-5 sm:p-6">
+                        <p class="text-sm text-brand-700 dark:text-brand-200">
+                            Choisissez les mesures que vous allez prendre. Aucune n'est obligatoire :
+                            cliquez sur une icône pour l'ajouter, cliquez encore pour la retirer.
+                        </p>
 
-                            <button
-                                type="button"
-                                class="cf-btn-secondary cf-btn-sm"
-                                x-on:click="ajouter()"
-                            >
-                                <i class="fa-solid fa-plus" aria-hidden="true"></i>
-                                Ajouter une mesure
-                            </button>
+                        {{-- Palette d'icônes --}}
+                        <div class="space-y-4">
+                            @foreach ($catalogue as $zone => $entrees)
+                                <fieldset>
+                                    <legend class="text-xs font-medium tracking-wide text-brand-600 uppercase dark:text-brand-300">
+                                        {{ $zone }}
+                                    </legend>
+
+                                    <div class="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-4">
+                                        @foreach ($entrees as $entree)
+                                            {{--
+                                                Les couleurs de la tuile sont entièrement pilotées par
+                                                Alpine : la classe statique ne porte que la mise en page.
+                                                Mélanger les deux ferait dépendre l'état retenu de
+                                                l'ordre d'émission des utilitaires Tailwind.
+                                            --}}
+                                            <button
+                                                type="button"
+                                                class="flex min-h-16 flex-col items-center justify-center gap-1.5 rounded-xl border px-2 py-2.5 text-center transition focus-visible:ring-2 focus-visible:ring-brand-accent focus-visible:ring-offset-1 focus-visible:outline-none dark:focus-visible:ring-offset-brand-dark"
+                                                x-on:click="basculer(@js($entree['code']))"
+                                                x-bind:aria-pressed="contient(@js($entree['code'])) ? 'true' : 'false'"
+                                                x-bind:class="contient(@js($entree['code']))
+                                                    ? 'border-brand-accent bg-brand-accent/10'
+                                                    : 'border-brand-200 bg-white hover:border-brand-400 hover:bg-brand-50 dark:border-white/10 dark:bg-white/5 dark:hover:border-brand-500/60'"
+                                            >
+                                                <i
+                                                    class="fa-solid {{ $entree['icone'] }} text-lg"
+                                                    :class="contient(@js($entree['code'])) ? 'text-brand-accent' : 'text-brand-500 dark:text-brand-300'"
+                                                    aria-hidden="true"
+                                                ></i>
+
+                                                <span class="text-[0.7rem] leading-tight font-medium text-brand-800 dark:text-brand-100">
+                                                    {{ $entree['libelle'] }}
+                                                </span>
+                                            </button>
+                                        @endforeach
+                                    </div>
+                                </fieldset>
+                            @endforeach
                         </div>
 
-                        <template x-for="(ligne, index) in lignes" :key="index">
-                            <div class="grid gap-3 rounded-xl border border-brand-200 bg-brand-50/40 p-3 sm:grid-cols-[minmax(0,1fr)_8rem_10rem_auto] sm:items-end dark:border-white/10 dark:bg-white/[0.03]">
-                                <div>
-                                    <label class="cf-label" :for="'mesure-' + index">
-                                        Mesure
-                                        <span class="text-brand-accent" aria-hidden="true">*</span>
-                                    </label>
-                                    <input
-                                        :id="'mesure-' + index"
-                                        class="cf-input"
-                                        type="text"
-                                        name="mesures[{{ '{' }}index{{ '}' }}][libelle]"
-                                        x-model="ligne.libelle"
-                                        list="mesures-suggerees"
-                                        autocomplete="off"
-                                        maxlength="120"
-                                        placeholder="Ex. Tour de poitrine"
-                                        x-bind:aria-invalid="ligne.libelle && !ligne.valeur ? 'true' : 'false'"
-                                    >
-                                </div>
+                        {{-- Mesures sélectionnées --}}
+                        <div class="border-t border-brand-200/70 pt-4 dark:border-white/10">
+                            <div class="flex flex-wrap items-center justify-between gap-2">
+                                <h3 class="text-sm font-semibold">
+                                    Mesures sélectionnées
+                                    <span
+                                        class="ml-1 text-brand-500 tabular-nums dark:text-brand-400"
+                                        x-text="nombre"
+                                        x-cloak
+                                    ></span>
+                                </h3>
 
-                                <div>
-                                    <label class="cf-label" :for="'valeur-' + index">
-                                        Valeur
-                                        <span class="text-brand-accent" aria-hidden="true">*</span>
-                                    </label>
-                                    <input
-                                        :id="'valeur-' + index"
-                                        class="cf-input"
-                                        type="number"
-                                        step="0.1"
-                                        min="0"
-                                        max="9999.99"
-                                        name="mesures[{{ '{' }}index{{ '}' }}][valeur]"
-                                        x-model="ligne.valeur"
-                                        placeholder="Ex. 92"
-                                    >
-                                </div>
-
-                                <div>
-                                    <label class="cf-label" :for="'unite-' + index">Unité</label>
-                                    <select
-                                        :id="'unite-' + index"
-                                        class="cf-select"
-                                        name="mesures[{{ '{' }}index{{ '}' }}][unite]"
-                                        x-model="ligne.unite"
-                                    >
-                                        @foreach ($unites as $valeurUnite => $libelleUnite)
-                                            <option value="{{ $valeurUnite }}">{{ $libelleUnite }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
-
-                                <button
-                                    type="button"
-                                    class="cf-btn-ghost cf-btn-sm text-red-600 dark:text-red-400"
-                                    x-on:click="retirer(index)"
-                                    x-show="lignes.length > 1"
-                                    x-bind:aria-label="'Retirer la mesure ' + (index + 1)"
+                                <p
+                                    class="text-xs text-brand-500 dark:text-brand-400"
+                                    x-show="nombre === 0"
+                                    x-cloak
                                 >
-                                    <i class="fa-solid fa-trash-can" aria-hidden="true"></i>
-                                    Retirer
-                                </button>
+                                    Aucune mesure pour l'instant.
+                                </p>
+                            </div>
 
-                                <template x-if="ligne.libelle && !ligne.valeur">
-                                    <p class="text-xs font-medium text-red-600 sm:col-span-4 dark:text-red-400">
-                                        Indiquez la valeur de « <span x-text="ligne.libelle"></span> » ou effacez son intitulé.
-                                    </p>
+                            <div
+                                class="mt-3 space-y-2"
+                                x-show="nombre > 0"
+                                x-cloak
+                            >
+                                <template x-for="(ligne, index) in lignes" :key="ligne.code || index">
+                                    <div class="rounded-xl border border-brand-200 bg-brand-50/40 p-3 dark:border-white/10 dark:bg-white/[0.03]">
+                                        {{-- Ligne 1 : l'icône, le nom de la mesure, et son retrait --}}
+                                        <div class="flex items-center gap-3">
+                                            <span class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-white text-brand-accent dark:bg-white/10">
+                                                <i class="fa-solid" :class="icone(ligne.code)" aria-hidden="true"></i>
+                                            </span>
+
+                                            <div class="min-w-0 flex-1">
+                                                <label
+                                                    class="block truncate text-sm font-semibold"
+                                                    :for="'valeur-' + index"
+                                                    x-text="ligne.libelle"
+                                                ></label>
+
+                                                <template x-if="!ligne.code">
+                                                    <span class="text-xs text-brand-500 dark:text-brand-400">
+                                                        Mesure personnalisée
+                                                    </span>
+                                                </template>
+                                            </div>
+
+                                            <button
+                                                type="button"
+                                                class="cf-btn-ghost cf-btn-sm shrink-0 text-red-600 dark:text-red-400"
+                                                x-on:click="basculer(ligne.code)"
+                                                :aria-label="'Retirer ' + ligne.libelle"
+                                            >
+                                                <i class="fa-solid fa-trash-can" aria-hidden="true"></i>
+                                                <span class="sr-only sm:not-sr-only">Retirer</span>
+                                            </button>
+                                        </div>
+
+                                        {{-- Ligne 2 : la valeur relevée et son unité --}}
+                                        <div class="mt-3 flex items-end gap-2">
+                                            <div class="min-w-0 flex-1">
+                                                <label class="sr-only" :for="'valeur-' + index">
+                                                    Valeur de <span x-text="ligne.libelle"></span>
+                                                </label>
+
+                                                <input
+                                                    :id="'valeur-' + index"
+                                                    class="cf-input"
+                                                    type="number"
+                                                    step="0.1"
+                                                    min="0"
+                                                    max="9999.99"
+                                                    inputmode="decimal"
+                                                    required
+                                                    :name="'mesures[' + index + '][valeur]'"
+                                                    x-model="ligne.valeur"
+                                                    placeholder="Ex. 92"
+                                                    :aria-label="'Valeur de ' + ligne.libelle"
+                                                >
+                                            </div>
+
+                                            <div class="w-28 shrink-0">
+                                                <label class="sr-only" :for="'unite-' + index">
+                                                    Unité de <span x-text="ligne.libelle"></span>
+                                                </label>
+
+                                                <select
+                                                    :id="'unite-' + index"
+                                                    class="cf-select"
+                                                    :name="'mesures[' + index + '][unite]'"
+                                                    x-model="ligne.unite"
+                                                    :aria-label="'Unité de ' + ligne.libelle"
+                                                >
+                                                    @foreach ($unites as $valeurUnite => $libelleUnite)
+                                                        <option value="{{ $valeurUnite }}">{{ $libelleUnite }}</option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
+                                        </div>
+
+                                        {{-- Le libellé et le code sont imposés par le catalogue --}}
+                                        <input type="hidden" :name="'mesures[' + index + '][libelle]'" :value="ligne.libelle">
+                                        <input type="hidden" :name="'mesures[' + index + '][code]'" :value="ligne.code">
+                                    </div>
                                 </template>
                             </div>
-                        </template>
+                        </div>
 
                         @error('mesures')
                             <p class="flex items-center gap-1.5 text-xs font-medium text-red-600 dark:text-red-400">
@@ -207,20 +299,6 @@
                                 :max="$aujourdhui"
                             />
 
-                            <x-form.text
-                                name="categorie"
-                                id="nouvelle-mesure-categorie"
-                                label="Catégorie"
-                                type="text"
-                                :value="old('categorie')"
-                                list="categories-mesures"
-                                autocomplete="off"
-                                placeholder="Ex. Haut du corps"
-                                maxlength="60"
-                                x-model="categorie"
-                                hint="Facultative : renseignée automatiquement pour les mesures courantes."
-                            />
-
                             <div class="sm:col-span-2">
                                 <x-form.textarea
                                     name="commentaire"
@@ -236,28 +314,20 @@
                     </div>
 
                     <div class="flex flex-wrap items-center gap-2 border-t border-brand-200/70 px-5 py-4 dark:border-white/10">
-                        <button type="submit" class="cf-btn-primary">
+                        <button
+                            type="submit"
+                            class="cf-btn-primary"
+                            x-bind:disabled="nombre === 0"
+                        >
                             <i class="fa-solid fa-check" aria-hidden="true"></i>
-                            Enregistrer les mesures
+                            <span x-text="nombre > 1 ? 'Enregistrer les ' + nombre + ' mesures' : 'Enregistrer la mesure'"></span>
                         </button>
 
                         <p class="text-xs text-brand-500 dark:text-brand-400">
-                            Les lignes laissées vides sont ignorées. Chaque valeur est conservée dans l'historique.
+                            Chaque valeur est conservée dans l'historique du client.
                         </p>
                     </div>
                 </form>
-
-                <datalist id="mesures-suggerees">
-                    @foreach ($libellesSuggeres as $libelleSuggere)
-                        <option value="{{ $libelleSuggere }}"></option>
-                    @endforeach
-                </datalist>
-
-                <datalist id="categories-mesures">
-                    @foreach ($categoriesCourantes as $categorieCourante)
-                        <option value="{{ $categorieCourante }}"></option>
-                    @endforeach
-                </datalist>
             </section>
 
             {{-- Recherche / filtres --}}
@@ -281,7 +351,7 @@
                         name="categorie"
                         id="filtre-mesures-categorie"
                         label="Catégorie"
-                        :options="$categoriesCourantes->all()"
+                        :options="$categoriesFiltre"
                         :value="$filtres['categorie'] ?? ''"
                         placeholder="Toutes les catégories"
                     />
@@ -394,7 +464,15 @@
                             @foreach ($mesures as $mesure)
                                 <tbody x-data="{ editing: {{ $mesureEditee?->id === $mesure->id ? 'true' : 'false' }} }">
                                     <tr>
-                                        <td class="font-medium">{{ $mesure->libelle }}</td>
+                                        <td>
+                                            <div class="flex items-center gap-2.5">
+                                                <span class="flex size-8 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-brand-accent dark:bg-white/5">
+                                                    <i class="fa-solid {{ $mesure->icone() }} text-sm" aria-hidden="true"></i>
+                                                </span>
+
+                                                <span class="font-medium">{{ $mesure->libelle }}</span>
+                                            </div>
+                                        </td>
 
                                         <td class="text-xs">
                                             @if (filled($mesure->categorie))
@@ -453,19 +531,56 @@
                                                 @method('PUT')
 
                                                 <div class="sm:col-span-2">
-                                                    <label for="edition-{{ $mesure->id }}-libelle" class="cf-label">Mesure</label>
-                                                    <input
-                                                        id="edition-{{ $mesure->id }}-libelle"
-                                                        name="libelle"
-                                                        type="text"
-                                                        value="{{ old('libelle', $mesure->libelle) }}"
-                                                        list="mesures-suggerees"
-                                                        autocomplete="off"
-                                                        maxlength="120"
-                                                        required
+                                                    <label for="edition-{{ $mesure->id }}-code" class="cf-label">Mesure</label>
+
+                                                    @php
+                                                        $entreeCourante = Mesure::entreeParCode($mesure->code)
+                                                            ?? Mesure::entreeParLibelle($mesure->libelle);
+                                                    @endphp
+
+                                                    <select
+                                                        id="edition-{{ $mesure->id }}-code"
+                                                        name="code"
+                                                        class="cf-select"
                                                         aria-invalid="{{ $errors->has('libelle') ? 'true' : 'false' }}"
-                                                        class="cf-input"
                                                     >
+                                                        @unless ($entreeCourante)
+                                                            {{--
+                                                                Mesure enregistrée avant le catalogue, ou dont
+                                                                l'intitulé n'y figure pas : elle reste
+                                                                sélectionnable et reste modifiable en clair.
+                                                            --}}
+                                                            <option
+                                                                value=""
+                                                                @selected(old('code', '') === '')
+                                                            >
+                                                                {{ $mesure->libelle }} (hors catalogue)
+                                                            </option>
+                                                        @endunless
+
+                                                        @foreach ($catalogue as $zone => $entrees)
+                                                            <optgroup label="{{ $zone }}">
+                                                                @foreach ($entrees as $entree)
+                                                                    <option
+                                                                        value="{{ $entree['code'] }}"
+                                                                        @selected(
+                                                                            (string) old('code', $entreeCourante['code'] ?? '') === $entree['code']
+                                                                        )
+                                                                    >
+                                                                        {{ $entree['libelle'] }}
+                                                                    </option>
+                                                                @endforeach
+                                                            </optgroup>
+                                                        @endforeach
+                                                    </select>
+
+                                                    @unless ($entreeCourante)
+                                                        <input
+                                                            type="hidden"
+                                                            name="libelle"
+                                                            value="{{ old('libelle', $mesure->libelle) }}"
+                                                        >
+                                                    @endunless
                                                 </div>
 
                                                 <div>
@@ -643,14 +758,20 @@
                             @php $releve = $entree['mesure']; @endphp
 
                             <li class="flex items-center justify-between gap-3 px-5 py-3">
-                                <div class="min-w-0">
-                                    <p class="truncate text-sm font-semibold">{{ $libelle }}</p>
-                                    <p class="truncate text-xs text-brand-500 dark:text-brand-400">
-                                        @if (filled($releve->categorie))
-                                            {{ $releve->categorie }} —
-                                        @endif
-                                        {{ $releve->date_mesure?->format('d/m/Y') ?? '—' }}
-                                    </p>
+                                <div class="flex min-w-0 items-center gap-2.5">
+                                    <span class="flex size-8 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-brand-accent dark:bg-white/5">
+                                        <i class="fa-solid {{ $releve->icone() }} text-sm" aria-hidden="true"></i>
+                                    </span>
+
+                                    <div class="min-w-0">
+                                        <p class="truncate text-sm font-semibold">{{ $libelle }}</p>
+                                        <p class="truncate text-xs text-brand-500 dark:text-brand-400">
+                                            @if (filled($releve->categorie))
+                                                {{ $releve->categorie }} —
+                                            @endif
+                                            {{ $releve->date_mesure?->format('d/m/Y') ?? '—' }}
+                                        </p>
+                                    </div>
                                 </div>
 
                                 <div class="shrink-0 text-right">
@@ -665,34 +786,33 @@
                 @endif
             </section>
 
+            {{-- Rappel des mesures du catalogue --}}
             <section class="cf-card overflow-hidden">
                 <div class="cf-card-header">
-                    <h2 class="font-serif text-lg font-semibold">Mesures courantes</h2>
+                    <h2 class="font-serif text-lg font-semibold">Catalogue des mesures</h2>
+                    <span class="text-xs text-brand-500 dark:text-brand-400">
+                        <span class="font-semibold tabular-nums">{{ count($catalogueParCode) }}</span>
+                        mesures
+                    </span>
                 </div>
 
-                <div class="space-y-4 p-5">
+                <div class="space-y-3 p-5">
                     <p class="text-xs text-brand-600 dark:text-brand-300">
-                        Cliquez sur un intitulé pour ajouter une ligne à remplir dans le formulaire.
+                        {{ count($catalogue) }} zones du corps, toutes facultatives. Utilisez la palette
+                        ci-dessus pour composer votre relevé.
                     </p>
 
-                    @foreach ($categoriesCourantes as $categorie)
+                    @foreach ($catalogue as $zone => $entrees)
                         <div>
                             <p class="text-xs font-medium tracking-wide text-brand-600 uppercase dark:text-brand-300">
-                                {{ $categorie }}
+                                {{ $zone }}
                             </p>
+
                             <ul class="mt-1.5 flex flex-wrap gap-1.5">
-                                @foreach (array_keys(collect($mesuresCourantes)->filter(
-                                    fn ($definition) => ($definition['categorie'] ?? null) === $categorie
-                                )->all()) as $libelleCourant)
-                                    <li>
-                                        <button
-                                            type="button"
-                                            class="cf-btn-secondary cf-btn-sm"
-                                            x-on:click="ajouterMesure(@js($libelleCourant), @js($categorie))"
-                                        >
-                                            <i class="fa-solid fa-plus text-[0.6rem]" aria-hidden="true"></i>
-                                            {{ $libelleCourant }}
-                                        </button>
+                                @foreach ($entrees as $entree)
+                                    <li class="inline-flex items-center gap-1.5 rounded-lg border border-brand-200 px-2 py-1 text-xs text-brand-700 dark:border-white/10 dark:text-brand-200">
+                                        <i class="fa-solid {{ $entree['icone'] }} text-brand-500 dark:text-brand-300" aria-hidden="true"></i>
+                                        {{ $entree['libelle'] }}
                                     </li>
                                 @endforeach
                             </ul>

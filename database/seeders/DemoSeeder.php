@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Enums\CommandeStatut;
+use App\Enums\DepenseCategorie;
 use App\Enums\ModeleCategorie;
 use App\Enums\PaiementMethode;
 use App\Enums\PaiementType;
@@ -195,23 +196,31 @@ class DemoSeeder extends Seeder
             'is_active' => true,
         ]));
 
+        /*
+         * Les intitulés et le code sont résolus dans le catalogue : le jeu
+         * de démonstration reste donc aligné sur la palette réelle, et chaque
+         * mesure reçoit l'icône correspondante dans l'interface.
+         */
         $mesuresTypes = [
             'Tour de poitrine' => 92,
             'Tour de taille' => 74,
             'Tour de hanches' => 98,
             'Carrure' => 39,
-            'Épaule' => 41,
+            'Longueur épaule' => 41,
             'Longueur manche' => 58,
-            'Longueur vêtement' => 112,
+            'Longueur robe' => 112,
             'Entrejambe' => 78,
         ];
 
         foreach ($clients as $index => $client) {
             foreach ($mesuresTypes as $libelle => $base) {
+                $entree = Mesure::entreeParLibelle($libelle);
+
                 Mesure::create([
                     'client_id' => $client->id,
+                    'code' => $entree['code'] ?? null,
                     'libelle' => $libelle,
-                    'categorie' => config('coutureflow.mesures_courantes')[$libelle]['categorie'] ?? null,
+                    'categorie' => $entree['categorie'] ?? null,
                     'valeur' => $base + ($index % 3) * 2,
                     'unite' => 'cm',
                     'date_mesure' => now()->subDays(30 - $index * 5),
@@ -223,6 +232,7 @@ class DemoSeeder extends Seeder
         // Deux mesures historiques pour illustrer l'évolution
         Mesure::create([
             'client_id' => $clients[0]->id,
+            'code' => Mesure::entreeParLibelle('Tour de taille')['code'] ?? null,
             'libelle' => 'Tour de taille',
             'categorie' => 'Haut du corps',
             'valeur' => 78,
@@ -325,12 +335,12 @@ class DemoSeeder extends Seeder
         ]);
 
         $depenses = [
-            ['libelle' => 'Achat de wax (10 mètres)', 'categorie' => \App\Enums\DepenseCategorie::Tissu, 'montant' => 85000, 'jours' => 8],
-            ['libelle' => 'Fil, aiguilles et fournitures', 'categorie' => \App\Enums\DepenseCategorie::Fournitures, 'montant' => 12500, 'jours' => 14],
-            ['libelle' => 'Entretien machine à coudre', 'categorie' => \App\Enums\DepenseCategorie::Entretien, 'montant' => 20000, 'jours' => 21],
-            ['libelle' => 'Transport — livraison', 'categorie' => \App\Enums\DepenseCategorie::Transport, 'montant' => 5000, 'jours' => 3],
-            ['libelle' => 'Publicité Instagram', 'categorie' => \App\Enums\DepenseCategorie::Publicite, 'montant' => 30000, 'jours' => 5],
-            ['libelle' => 'Aideouns salon', 'categorie' => \App\Enums\DepenseCategorie::Salaires, 'montant' => 150000, 'jours' => 7],
+            ['libelle' => 'Achat de wax (10 mètres)', 'categorie' => DepenseCategorie::Tissu, 'montant' => 85000, 'jours' => 8],
+            ['libelle' => 'Fil, aiguilles et fournitures', 'categorie' => DepenseCategorie::Fournitures, 'montant' => 12500, 'jours' => 14],
+            ['libelle' => 'Entretien machine à coudre', 'categorie' => DepenseCategorie::Entretien, 'montant' => 20000, 'jours' => 21],
+            ['libelle' => 'Transport — livraison', 'categorie' => DepenseCategorie::Transport, 'montant' => 5000, 'jours' => 3],
+            ['libelle' => 'Publicité Instagram', 'categorie' => DepenseCategorie::Publicite, 'montant' => 30000, 'jours' => 5],
+            ['libelle' => 'Aideouns salon', 'categorie' => DepenseCategorie::Salaires, 'montant' => 150000, 'jours' => 7],
         ];
 
         foreach ($depenses as $depense) {
@@ -348,7 +358,7 @@ class DemoSeeder extends Seeder
         Depense::create([
             'atelier_id' => $atelier->id,
             'libelle' => 'Loyer mensuel',
-            'categorie' => \App\Enums\DepenseCategorie::Loyer,
+            'categorie' => DepenseCategorie::Loyer,
             'montant' => 120000,
             'date_depense' => now()->subMonth()->startOfMonth(),
             'created_by' => $user->id,

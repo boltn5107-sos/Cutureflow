@@ -36,8 +36,17 @@ Alpine.store('confirm', {
 });
 
 Alpine.data('themeToggle', () => ({
+    /*
+     * Rejoue exactement la décision du script <head>, sans jamais écrire dans
+     * localStorage. Un simple « ?? 'light' » forçait le mode clair sur les
+     * écrans réglés en mode sombre, et annulait la préférence du système dès
+     * le premier rendu d'Alpine.
+     */
     init() {
-        this.apply(localStorage.getItem('cf-theme') ?? 'light');
+        const stored = localStorage.getItem('cf-theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+        this.apply(stored ?? (prefersDark ? 'dark' : 'light'));
     },
     toggle() {
         const next = document.documentElement.classList.contains('dark') ? 'light' : 'dark';
@@ -109,6 +118,59 @@ Alpine.data('soldeCalcul', (prixTotal, avance) => ({
     },
     format(value) {
         return new Intl.NumberFormat('fr-FR').format(value) + ' FCFA';
+    },
+}));
+
+Alpine.data('mesureForm', (catalogue, lignes, uniteParDefaut) => ({
+    /*
+     * Le formulaire de mesures ne propose plus des champs à remplir : le
+     * tailleur clique sur l'icône d'une mesure du catalogue, et elle
+     * s'ajoute à la liste des mesures à relever. Un second clic la retire.
+     *
+     * « catalogue » est indexé par code pour que l'ajout et le retrait se
+     * fassent en O(1) : le nombre de mesures saisies est petit, mais la
+     * palette affiche les 23 entrées du catalogue.
+     */
+    catalogue: catalogue ?? {},
+    lignes: lignes ?? [],
+    uniteParDefaut: uniteParDefaut || 'cm',
+
+    get nombre() {
+        return this.lignes.length;
+    },
+
+    entree(code) {
+        return this.catalogue[code] ?? null;
+    },
+
+    contient(code) {
+        return this.lignes.some((ligne) => ligne.code === code);
+    },
+
+    icone(code) {
+        return this.entree(code)?.icone ?? 'fa-ruler-combined';
+    },
+
+    basculer(code) {
+        if (this.contient(code)) {
+            this.lignes = this.lignes.filter((ligne) => ligne.code !== code);
+
+            return;
+        }
+
+        const mesure = this.entree(code);
+
+        // Un code absent du catalogue ne correspond à aucune mesure à relever.
+        if (!mesure) {
+            return;
+        }
+
+        this.lignes.push({
+            code: code,
+            libelle: mesure.libelle,
+            valeur: '',
+            unite: this.uniteParDefaut,
+        });
     },
 }));
 

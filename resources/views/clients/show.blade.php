@@ -193,7 +193,15 @@
                             <tbody>
                                 @foreach ($mesuresRecentes as $mesure)
                                     <tr>
-                                        <td class="font-medium">{{ $mesure->libelle }}</td>
+                                        <td>
+                                            <div class="flex items-center gap-2.5">
+                                                <span class="flex size-8 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-brand-accent dark:bg-white/5">
+                                                    <i class="fa-solid {{ $mesure->icone() }} text-sm" aria-hidden="true"></i>
+                                                </span>
+
+                                                <span class="font-medium">{{ $mesure->libelle }}</span>
+                                            </div>
+                                        </td>
                                         <td class="text-xs">
                                             @if (filled($mesure->categorie))
                                                 <span class="cf-badge">{{ $mesure->categorie }}</span>

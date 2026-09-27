@@ -251,11 +251,18 @@
                 </p>
             </div>
 
-            <div class="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+            {{--
+                Bouton d'envoi : le libellé était « Envoyer mon inscription », trop
+                long et trop large sur un écran de téléphone. « Créer mon compte »
+                dit la même chose en occupant moins de place. Le px-6 n'est
+                appliqué qu'à partir de sm : sur mobile, le bouton garde la
+                largeur de la colonne mais sans l'élargissement supplémentaire.
+            --}}
+            <div class="flex flex-col-reverse gap-2.5 sm:flex-row sm:justify-end sm:gap-3">
                 <a href="{{ route('accueil') }}" class="cf-btn-secondary justify-center">Annuler</a>
-                <button type="submit" class="cf-btn-primary justify-center px-6">
+                <button type="submit" class="cf-btn-primary w-full justify-center sm:w-auto sm:px-6">
                     <i class="fa-solid fa-paper-plane" aria-hidden="true"></i>
-                    Envoyer mon inscription
+                    Créer mon compte
                 </button>
             </div>
         </form>
