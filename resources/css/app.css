@@ -1,0 +1,200 @@
+/* Polices : Inter (textes) et Playfair Display (titres) */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap');
+
+@import 'tailwindcss';
+
+@import '@fortawesome/fontawesome-free/css/all.min.css';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../**/*.blade.php';
+@source '../**/*.js';
+
+/*
+|---------------------------------------------------------------------------
+| Couture Flow — thème Tailwind v4 (équivalent CSS-first du tailwind.config)
+|---------------------------------------------------------------------------
+| Laravel 12 utilise Tailwind v4. La configuration se déclare en CSS via
+| @theme / @custom-variant. Les classes utilitaires générées sont identiques
+| à celles du tailwind.config demandé (bg-brand-500, text-brand-accent,
+| font-serif, dark:*, etc.).
+*/
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+    --color-brand-50: #fdfbf7;
+    --color-brand-100: #f7f2e6;
+    --color-brand-200: #efe5cc;
+    --color-brand-300: #d9c69c;
+    --color-brand-400: #c2a76b;
+    --color-brand-500: #a98740;
+    --color-brand-600: #8c6e30;
+    --color-brand-700: #6e5424;
+    --color-brand-800: #523e1a;
+    --color-brand-900: #382a11;
+    --color-brand-accent: #c86d51;
+    --color-brand-dark: #1c1a17;
+
+    --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+    --font-serif: 'Playfair Display', ui-serif, Georgia, serif;
+
+    --shadow-card: 0 1px 2px 0 rgb(28 26 23 / 0.04), 0 1px 3px 0 rgb(28 26 23 / 0.06);
+    --shadow-elevated: 0 4px 12px -2px rgb(28 26 23 / 0.08), 0 2px 4px -2px rgb(28 26 23 / 0.04);
+}
+
+@layer base {
+    html {
+        -webkit-text-size-adjust: 100%;
+        scroll-behavior: smooth;
+        /*
+         * Indique au navigateur le schéma de couleurs à utiliser pour les
+         * contrôles natifs. Sans cela, la liste déroulante d'un <select> est
+         * peinte avec les couleurs claires du système : le texte devient
+         * invisible en mode sombre. "light dark" suit la classe .dark.
+         */
+        color-scheme: light;
+    }
+
+    html.dark {
+        color-scheme: dark;
+    }
+
+    /*
+     * Les <option> sont peintes par le navigateur à partir du schéma, mais
+     * certains navigateurs ignorent color-scheme : on impose les couleurs.
+     */
+    select option {
+        background-color: var(--color-white);
+        color: var(--color-brand-900);
+    }
+
+    .dark select option {
+        background-color: var(--color-brand-dark);
+        color: var(--color-brand-50);
+    }
+
+    body {
+        font-family: var(--font-sans);
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+
+    [x-cloak] {
+        display: none !important;
+    }
+
+    /* Masque les flèches natives des inputs number pour un rendu sobre */
+    input[type='number']::-webkit-outer-spin-button,
+    input[type='number']::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+
+    input[type='number'] {
+        -moz-appearance: textfield;
+        appearance: textfield;
+    }
+}
+
+/* Classes composables : déclarées via @utility pour pouvoir être réutilisées
+   par @apply dans les variantes ci-dessous. */
+
+@utility cf-input {
+    @apply block w-full rounded-lg border border-brand-200 bg-white px-3.5 py-2.5 text-sm text-brand-900 placeholder-brand-400 transition
+        focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 focus:outline-none
+        disabled:cursor-not-allowed disabled:bg-brand-50 disabled:text-brand-400
+        dark:border-white/10 dark:bg-white/5 dark:text-brand-50 dark:placeholder-brand-300;
+}
+
+@utility cf-btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition
+        focus:ring-2 focus:ring-offset-1 focus:outline-none focus:ring-brand-500/40
+        disabled:cursor-not-allowed disabled:opacity-50 dark:focus:ring-offset-brand-dark;
+}
+
+@utility cf-badge {
+    @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium whitespace-nowrap;
+}
+
+@utility cf-link {
+    @apply font-medium text-brand-600 underline-offset-4 hover:text-brand-800 hover:underline dark:text-brand-300 dark:hover:text-brand-200;
+}
+
+@utility cf-label {
+    @apply mb-1.5 block text-sm font-medium text-brand-800 dark:text-brand-100;
+}
+
+@layer components {
+    .cf-card {
+        @apply rounded-xl border border-brand-200/70 bg-white shadow-card dark:border-white/10 dark:bg-brand-dark;
+    }
+
+    .cf-card-header {
+        @apply flex flex-wrap items-center justify-between gap-3 border-b border-brand-200/70 px-5 py-4 dark:border-white/10;
+    }
+
+    .cf-select {
+        @apply cf-input appearance-none bg-no-repeat pr-10;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%23a98740'%3E%3Cpath fill-rule='evenodd' d='M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z' clip-rule='evenodd'/%3E%3C/svg%3E");
+        background-position: right 0.65rem center;
+        background-size: 1.15em 1.15em;
+    }
+
+    .cf-btn-primary {
+        @apply cf-btn bg-brand-800 text-brand-50 hover:bg-brand-900 dark:bg-brand-400 dark:text-brand-900 dark:hover:bg-brand-300;
+    }
+
+    .cf-btn-secondary {
+        @apply cf-btn border border-brand-200 bg-white text-brand-800 hover:bg-brand-50 dark:border-white/15 dark:bg-white/5 dark:text-brand-100 dark:hover:bg-white/10;
+    }
+
+    .cf-btn-accent {
+        @apply cf-btn bg-brand-accent text-white hover:brightness-95;
+    }
+
+    .cf-btn-danger {
+        @apply cf-btn bg-red-600 text-white hover:bg-red-700;
+    }
+
+    .cf-btn-ghost {
+        @apply cf-btn text-brand-700 hover:bg-brand-50 dark:text-brand-200 dark:hover:bg-white/5;
+    }
+
+    .cf-btn-sm {
+        @apply px-3 py-1.5 text-xs;
+    }
+
+    .cf-table {
+        @apply w-full border-collapse text-left text-sm;
+    }
+
+    .cf-table thead th {
+        @apply border-b border-brand-200/70 px-4 py-3 text-xs font-semibold tracking-wide text-brand-700 uppercase dark:border-white/10 dark:text-brand-200;
+    }
+
+    .cf-table tbody td {
+        @apply border-b border-brand-100 px-4 py-3 align-middle text-brand-800 dark:border-white/5 dark:text-brand-100;
+    }
+
+    .cf-table tbody tr:last-child td {
+        @apply border-b-0;
+    }
+
+    .cf-table tbody tr {
+        @apply transition hover:bg-brand-50/60 dark:hover:bg-white/[0.03];
+    }
+
+    .cf-divider {
+        @apply border-t border-brand-200/70 dark:border-white/10;
+    }
+
+    .cf-dropzone {
+        @apply flex flex-col items-center justify-center rounded-xl border border-dashed border-brand-300 bg-brand-50/50 px-4 py-8 text-center transition
+            hover:border-brand-500 hover:bg-brand-50 dark:border-white/15 dark:bg-white/[0.03] dark:hover:border-brand-400;
+    }
+
+    .cf-pagination {
+        @apply flex flex-wrap items-center justify-between gap-3 border-t border-brand-200/70 px-5 py-3 text-sm dark:border-white/10;
+    }
+}
