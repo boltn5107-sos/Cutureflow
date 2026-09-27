@@ -33,6 +33,13 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->redirectGuestsTo(fn () => route('login'));
+
+        // Render (et tout autre reverse proxy) termine le TLS en amont et
+        // transmet la requête en HTTP au conteneur. Sans cette confiance,
+        // Laravel croit que le site est en HTTP simple : les cookies de
+        // session ne sont jamais marqués « Secure » et l'adresse IP
+        // enregistrée est celle du proxy.
+        $middleware->trustProxies(at: '*');
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

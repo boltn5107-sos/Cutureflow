@@ -1,0 +1,45 @@
+# Contexte de construction Docker.
+#
+# Le but est double : ne jamais faire entrer de secret dans l'image
+# (le fichier .env local contient une vraie clé d'application et de vrais
+# identifiants MySQL) et ne pas embarquer de fichiers régénérables.
+
+# Secret local — les variables d'environnement sont injectées par Render.
+.env
+.env.*
+!.env.example
+
+.git
+.gitignore
+.gitattributes
+.github
+
+# Dépendances : réinstallées dans l'image.
+node_modules
+vendor
+
+# Assets : recompilés par l'étape « assets ».
+public/build
+public/hot
+public/storage
+
+# Données locales, journaux, caches Blade compilés et, surtout, le
+# fichier de verrouillage de l'installateur : un verrou embarqué dans
+# l'image ferait croire l'application installée avant même la migration.
+storage
+bootstrap/cache/*.php
+
+# Résidus de développement.
+.phpunit.result.cache
+.phpunit.cache
+.env.backup
+*.log
+.idea
+.vscode
+.DS_Store
+Thumbs.db
+
+# Déploiement
+docker-compose.yml
+docker-compose.*.yml
+DEPLOY.md

@@ -1,0 +1,134 @@
+# ==========================================================================
+#  Couture Flow — Render Blueprint
+# ==========================================================================
+#  Création du service depuis l'interface Render :
+#    Blueprints > New Blueprint Instance > pointed sur ce dépôt
+#
+#  Ou directement depuis le tableau de bord Render :
+#    New > Web Service > connecter le dépôt (le Dockerfile est détecté seul)
+#
+#  Les variables marquées « sync: false » sont à saisir dans le tableau de
+#  bord : elles ne sont jamais inscrites dans le dépôt.
+# ==========================================================================
+
+services:
+  - type: web
+    name: coutureflow
+    runtime: docker
+
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+
+    # Les disques persistants sont réservés aux plans payants.
+    # Frankfurt est la région la plus proche du Sénégal.
+    plan: starter
+    region: frankfurt
+
+    # Route de santé Laravel (bootstrap/app.php). Si elle ne répond pas en
+    # quelques secondes, Render considère le déploiement comme échoué.
+    healthCheckPath: /up
+
+    # Déploiement manuel : ce projet joue ses migrations au démarrage, mieux
+    # vaut déclencher le déploiement après avoir relu le diff.
+    autoDeploy: false
+
+    # ------------------------------------------------------------- variables
+    envVars:
+      - key: APP_NAME
+        value: "Couture Flow"
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: "false"
+      - key: APP_KEY
+        generateValue: true
+      - key: APP_URL
+        sync: false
+      - key: APP_LOCALE
+        value: fr
+      - key: APP_FALLBACK_LOCALE
+        value: fr
+      - key: APP_CURRENCY
+        value: FCFA
+      - key: APP_MAINTENANCE_DRIVER
+        value: file
+
+      # ---------------------------------------------------------------- base
+      # Render ne fournit pas de MySQL managé : renseigner ici les
+      # identifiants d'une base externe (Aiven, PlanetScale, Pi-lon…).
+      # Pour la base PostgreSQL incluse dans Render, remplacer par :
+      #   DB_CONNECTION: pgsql
+      - key: DB_CONNECTION
+        value: mysql
+      - key: DB_HOST
+        sync: false
+      - key: DB_PORT
+        value: "3306"
+      - key: DB_DATABASE
+        sync: false
+      - key: DB_USERNAME
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+
+      # ------------------------------------------------- sessions et caches
+      # Base de données plutôt que fichier : le conteneur est éphémère.
+      - key: SESSION_DRIVER
+        value: database
+      - key: CACHE_STORE
+        value: database
+      - key: QUEUE_CONNECTION
+        value: database
+
+      # ---------------------------------------------------------- fichiers
+      # Les preuves Wave et les photos sont écrites sur le disque persistant
+      # monté par l'entrypoint (voir docker/entrypoint.sh).
+      - key: FILESYSTEM_DISK
+        value: local
+      - key: PAYMENT_PROOF_DISK
+        value: local
+      - key: MEDIA_DISK
+        value: local
+      - key: PERSISTENT_STORAGE_PATH
+        value: /var/data
+      - key: AUTO_MIGRATE
+        value: "true"
+
+      # -------------------------------------------------------------- logs
+      - key: LOG_CHANNEL
+        value: stderr
+      - key: LOG_LEVEL
+        value: info
+
+      # -------------------------------------------------------------- e-mail
+      - key: MAIL_MAILER
+        value: log
+      - key: MAIL_FROM_ADDRESS
+        sync: false
+      - key: MAIL_FROM_NAME
+        value: "Couture Flow"
+
+      # ------------------------------------------------------------- Wave
+      - key: WAVE_PAYMENT_NUMBER
+        sync: false
+      - key: WAVE_PAYMENT_NAME
+        sync: false
+      - key: WAVE_COUNTRY
+        value: SN
+
+      # -------------------------------------------------------- abonnement
+      - key: SUBSCRIPTION_AMOUNT
+        value: "2000"
+      - key: SUBSCRIPTION_MONTHS
+        value: "1"
+      - key: SUBSCRIPTION_LABEL
+        value: "Abonnement mensuel"
+      - key: REMINDER_DUE_SOON_DAYS
+        value: "2"
+
+    # Preuves de paiement, photos clients et photos de modèles.
+    # Sans ce disque, un redéploiement effacerait toutes les images.
+    disk:
+      name: coutureflow-media
+      mountPath: /var/data
+      sizeGB: 10
