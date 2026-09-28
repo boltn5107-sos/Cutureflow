@@ -136,19 +136,19 @@
                             <tbody>
                                 @foreach ($modele->commandes as $commande)
                                     <tr>
-                                        <td>
+                                        <td data-label="Numéro">
                                             <a href="{{ route('commandes.show', $commande) }}" class="cf-link font-semibold">
                                                 {{ $commande->numero }}
                                             </a>
                                         </td>
-                                        <td>{{ $commande->client?->nom ?? '—' }}</td>
-                                        <td>
+                                        <td data-label="Client">{{ $commande->client?->nom ?? '—' }}</td>
+                                        <td data-label="Statut">
                                             <span class="cf-badge {{ $commande->statutBadgeClass() }}">
                                                 {{ $commande->statutLabel() }}
                                             </span>
                                         </td>
-                                        <td class="tabular-nums">{{ $commande->date_commande->format('d/m/Y') }}</td>
-                                        <td class="text-right tabular-nums">
+                                        <td data-label="Date" class="tabular-nums">{{ $commande->date_commande->format('d/m/Y') }}</td>
+                                        <td data-label="Solde" class="text-right tabular-nums">
                                             {{ number_format((float) $commande->solde, 0, ',', ' ') }}
                                         </td>
                                     </tr>

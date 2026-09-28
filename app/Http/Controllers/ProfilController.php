@@ -8,7 +8,6 @@ use App\Models\Subscription;
 use App\Models\User;
 use App\Notifications\NouvelleInscriptionNotification;
 use App\Notifications\StatutCompteChangeNotification;
-use App\Services\AccountStatusService;
 use App\Services\FileStorageService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -16,14 +15,12 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
 class ProfilController extends Controller
 {
     public function __construct(
         private readonly FileStorageService $files,
-        private readonly AccountStatusService $statuses,
     ) {}
 
     public function edit(Request $request): View
@@ -47,13 +44,28 @@ class ProfilController extends Controller
             'phone' => $request->string('phone')->toString(),
         ]);
 
-        $atelier?->update([
+        /*
+         * Le téléphone de l'atelier est un champ à part : il était
+         * écrasé par le numéro personnel du responsable, qui le rendait
+         * impossible à maintenir depuis le profil.
+         *
+         * La colonne n'est touchée que si le champ est réellement présent
+         * dans la requête : un envoi partiel ne doit pas effacer une
+         * information, alors qu'un champ volontairement vidé doit rester
+         * effaçable.
+         */
+        $atelierDonnees = [
             'nom' => $request->string('atelier_nom')->toString(),
-            'telephone' => $request->string('phone')->toString(),
             'adresse' => $request->input('adresse'),
             'ville' => $request->input('ville'),
             'ninea' => $request->input('ninea'),
-        ]);
+        ];
+
+        if ($request->has('atelier_telephone')) {
+            $atelierDonnees['telephone'] = $request->input('atelier_telephone');
+        }
+
+        $atelier?->update($atelierDonnees);
 
         return back()->with('success', 'Votre profil a été mis à jour.');
     }

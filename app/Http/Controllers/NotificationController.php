@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Contracts\View\View;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
@@ -59,5 +60,36 @@ class NotificationController extends Controller
         $request->user()->notifications()->delete();
 
         return back()->with('success', 'Toutes les notifications ont été supprimées.');
+    }
+
+    /**
+     * Point d'état interrogé périodiquement par le navigateur.
+     *
+     * Les notifications sont habituellement rendues à l'ouverture de la
+     * page : sans cet appel, le navigateur n'a aucun moyen de savoir qu'une
+     * notification est arrivée entre deux pages, et ne peut donc ni mettre à
+     * jour la pastille ni déclencher le son.
+     *
+     * La lecture est strictement celle du compte connecté, et l'appel ne
+     * marque rien comme lu : il ne fait que constat. La notification la
+     * plus récente est renvoyée entière pour que le son et la bannière
+     * puissent s'afficher sans second aller-retour.
+     */
+    public function etat(Request $request): JsonResponse
+    {
+        $dernier = $request->user()->notifications()->latest()->first();
+
+        return response()->json([
+            'nonLues' => $request->user()->unreadNotifications()->count(),
+            'dernier' => $dernier ? [
+                'id' => $dernier->id,
+                'titre' => $dernier->data['title'] ?? 'Notification',
+                'message' => $dernier->data['message'] ?? '',
+                'icone' => $dernier->data['icon'] ?? 'fa-regular fa-bell',
+                'ton' => $dernier->data['tone'] ?? 'bg-brand-100 text-brand-700 dark:bg-white/10 dark:text-brand-200',
+                'url' => $dernier->data['url'] ?? route('notifications.index'),
+                'quand' => $dernier->created_at->diffForHumans(),
+            ] : null,
+        ]);
     }
 }

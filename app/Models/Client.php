@@ -8,11 +8,19 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
 
 class Client extends Model
 {
     use HasFactory, SoftDeletes;
+
+    /**
+     * Clé de groupement des mesures sans date, en fin de liste : plus petite
+     * que n'importe quelle date au format Y-m-d, elle se retrouve en dernier
+     * dans un classement descendant.
+     */
+    public const DATE_SANS_RELEVE = '0000-00-00';
 
     protected $fillable = [
         'atelier_id',
@@ -58,6 +66,11 @@ class Client extends Model
         return $this->hasMany(RendezVous::class)->latest('date_debut');
     }
 
+    public function relances(): HasMany
+    {
+        return $this->hasMany(ClientRelance::class)->latest();
+    }
+
     public function hasPhoto(): bool
     {
         return filled($this->photo_path);
@@ -79,13 +92,33 @@ class Client extends Model
         }
     }
 
-    public function latestMesures(): array
-    {
-        return $this->mesures
-            ->unique('libelle')
-            ->values()
-            ->all();
-    }
+    /**
+     * Relevés de mesures, groupés par journée de prise : une carte par
+     * relevé. La fiche du client raconte alors l'historique des mensurations,
+     * séance après séance, au lieu d'un instantané de la dernière valeur.
+     *
+     * Le groupe le plus récent vient en premier ; à l'intérieur d'un relevé,
+     * l'ordre d'enregistrement est conservé. Les mesures sans date — elles
+     * ont pu être saisies avant la mise en place de la colonne — forment un
+     * dernier groupe « sans date », trié en fin de liste.
+     *
+     * @param  Collection<int, Mesure>|null  $mesures  valeurs déjà chargées (ex. le résultat filtré d'une requête)
+     * @return Collection<string, Collection<int, Mesure>>
+     */
+   public function relevesMesures(?Collection $mesures = null): Collection
+{
+    $mesures ??= $this->mesures;
+
+    return $mesures
+        ->sortByDesc(fn (Mesure $mesure) => $mesure->date_mesure ?? self::DATE_SANS_RELEVE)
+        ->groupBy(function (Mesure $mesure) {
+            $date = $mesure->date_mesure?->toDateString() ?? self::DATE_SANS_RELEVE;
+            $heure = $mesure->created_at?->format('H:i') ?? '00:00';
+            return $date . '|' . $heure;
+        })
+        ->map(fn (Collection $releve) => $releve->sortBy('id')->values())
+        ->sortKeysDesc();
+}
 
     public function totalCommande(): float
     {

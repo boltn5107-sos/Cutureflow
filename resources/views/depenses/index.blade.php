@@ -153,33 +153,33 @@
                             <tbody>
                                 @foreach ($depenses as $depense)
                                     <tr>
-                                        <td class="whitespace-nowrap tabular-nums">
+                                        <td data-label="Date" class="whitespace-nowrap tabular-nums">
                                             {{ $depense->date_depense?->format('d/m/Y') ?? '—' }}
                                         </td>
 
-                                        <td class="font-medium">{{ $depense->libelle }}</td>
+                                        <td data-label="Libellé" class="font-medium">{{ $depense->libelle }}</td>
 
-                                        <td>
+                                        <td data-label="Catégorie">
                                             <span class="cf-badge bg-brand-100 text-brand-700 dark:bg-brand-500/15 dark:text-brand-200">
                                                 <i class="{{ $depense->categorieIcon() }} text-[0.7em]" aria-hidden="true"></i>
                                                 {{ $depense->categorieLabel() }}
                                             </span>
                                         </td>
 
-                                        <td class="text-right font-semibold tabular-nums">
+                                        <td data-label="Montant" class="text-right font-semibold tabular-nums">
                                             {{ number_format((float) $depense->montant, 0, ',', ' ') }}
                                             <span class="text-[0.65rem] font-normal text-brand-500 dark:text-brand-400">{{ $devise }}</span>
                                         </td>
 
-                                        <td class="max-w-xs text-xs">
+                                        <td data-label="Notes" class="max-w-xs text-xs">
                                             <span class="line-clamp-2">{{ $depense->notes ?: '—' }}</span>
                                         </td>
 
-                                        <td class="whitespace-nowrap text-xs">
+                                        <td data-label="Auteur" class="whitespace-nowrap text-xs">
                                             {{ $depense->creator?->name ?? '—' }}
                                         </td>
 
-                                        <td class="text-right">
+                                        <td data-compact class="text-right">
                                             <a
                                                 href="{{ route('depenses.edit', $depense) }}"
                                                 class="cf-btn-secondary cf-btn-sm"

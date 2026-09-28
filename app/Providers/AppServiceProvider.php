@@ -21,6 +21,7 @@ use App\Policies\PaiementPolicy;
 use App\Policies\RendezVousPolicy;
 use App\Policies\SubscriptionPolicy;
 use App\Policies\UserPolicy;
+use App\View\Components\StatusBadge;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\View;
@@ -46,12 +47,19 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(ModelePhoto::class, ModelePolicy::class);
         Gate::policy(RendezVous::class, RendezVousPolicy::class);
 
-        Blade::component('status-badge', \App\View\Components\StatusBadge::class);
+        Blade::component('status-badge', StatusBadge::class);
 
         // Le compteur de notifications non lues est nécessaire aux en-têtes
         // des deux layouts : il est calculé une seule fois par requête.
+        //
+        // L'identifiant de la dernière notification sert de point de départ
+        // au client qui interroge /notifications/etat : sans lui, la première
+        // sonnerie déclencherait pour toutes les notifications déjà à l'écran.
         View::composer(['layouts.app', 'layouts.admin'], function ($view): void {
+            $derniere = auth()->user()?->notifications()->latest()->first();
+
             $view->with('unreadCount', auth()->user()?->unreadNotifications()->count() ?? 0);
+            $view->with('dernierNotificationId', $derniere?->id);
         });
     }
 }

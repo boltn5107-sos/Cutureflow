@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Services\DashboardService;
+use App\Services\RelanceService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 
@@ -30,6 +31,14 @@ class DashboardController extends Controller
             'evolution' => $service->evolutionFinanciere(),
             'activite' => $service->activiteRecente(),
             'topClients' => $service->topClients(),
+            // Le compteur n'est calculé que si les relances sont activées :
+            // la détection coûte plusieurs requêtes, inutile quand la
+            // fonction reste masquée.
+            'relances' => [
+                'total' => config('coutureflow.relances_actives')
+                    ? RelanceService::for($request->user())->compteur()
+                    : 0,
+            ],
         ]);
     }
 }

@@ -158,7 +158,7 @@
                             <tbody>
                                 @foreach ($user->subscriptions->sortByDesc('date_paiement') as $subscription)
                                     <tr>
-                                        <td>
+                                        <td data-label="Libellé">
                                             <p class="font-medium">{{ $subscription->libelle }}</p>
                                             @if ($subscription->reason)
                                                 <p class="mt-0.5 text-xs text-red-600 dark:text-red-400">
@@ -166,13 +166,13 @@
                                                 </p>
                                             @endif
                                         </td>
-                                        <td class="tabular-nums">
+                                        <td data-label="Montant" class="tabular-nums">
                                             {{ number_format((float) $subscription->montant, 0, ',', ' ') }}
                                         </td>
-                                        <td class="tabular-nums">{{ $subscription->date_paiement->format('d/m/Y') }}</td>
-                                        <td><x-status-badge :status="$subscription->statut" /></td>
-                                        <td class="text-xs text-brand-500">{{ $subscription->reviewer?->name ?? '—' }}</td>
-                                        <td class="text-right">
+                                        <td data-label="Payé le" class="tabular-nums">{{ $subscription->date_paiement->format('d/m/Y') }}</td>
+                                        <td data-label="Statut"><x-status-badge :status="$subscription->statut" /></td>
+                                        <td data-label="Validé par" class="text-xs text-brand-500">{{ $subscription->reviewer?->name ?? '—' }}</td>
+                                        <td data-compact class="text-right">
                                             <a href="{{ route('admin.paiements.show', $subscription) }}" class="cf-link text-xs font-semibold">
                                                 Vérifier
                                             </a>

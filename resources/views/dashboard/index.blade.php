@@ -41,6 +41,51 @@
         </a>
     @endif
 
+    {{--
+        Relances : on rappelle par qui la commande n'a pas encore été
+        transformée. Les clients déjà relancés récemment en sont exclus, et
+        le compteur suit le même filtre que la page.
+    --}}
+    @if ($relances['total'] > 0)
+        <a
+            href="{{ route('relances.index') }}"
+            class="mb-6 flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3.5 transition hover:bg-amber-100 dark:border-amber-500/30 dark:bg-amber-500/10 dark:hover:bg-amber-500/20"
+        >
+            <i class="fa-solid fa-bell-concierge mt-0.5 text-amber-600 dark:text-amber-400" aria-hidden="true"></i>
+            <div>
+                <p class="text-sm font-semibold text-amber-900 dark:text-amber-200">
+                    {{ $relances['total'] }} client(s) à relancer
+                </p>
+                <p class="mt-0.5 text-xs text-amber-800/80 dark:text-amber-300/80">
+                    Mesures prises sans commande, pièces prêtes non retirées, clients inactifs.
+                </p>
+            </div>
+            <i class="fa-solid fa-arrow-right ml-auto mt-1 text-amber-600" aria-hidden="true"></i>
+        </a>
+    @endif
+
+    {{--
+        Le partage ne transmet aucune donnée client : il promeut l'application
+        auprès d'autres ateliers. Le lien pointe vers la page d'accueil publique.
+    --}}
+    <div class="mb-6 flex flex-wrap items-center gap-3 rounded-xl border border-brand-200 bg-brand-50 px-4 py-3.5 dark:border-white/10 dark:bg-white/5">
+        <i class="fa-solid fa-star text-brand-500" aria-hidden="true"></i>
+        <div class="min-w-0 flex-1">
+            <p class="text-sm font-semibold text-brand-900 dark:text-brand-100">
+                Couture Flow vous a sauvé du temps ?
+            </p>
+            <p class="mt-0.5 text-xs text-brand-700/80 dark:text-brand-300/80">
+                Partagez l'application à un autre atelier : ils recevront le lien.
+            </p>
+        </div>
+        <x-share-button
+            class="cf-btn-secondary cf-btn-sm"
+            titre="Couture Flow — la gestion d'atelier de couture"
+            :texte="'Je utilise Couture Flow pour gérer mon atelier de couture : clients, mesures, commandes et planning au même endroit. Essayez aussi :'"
+            :url="route('accueil')"
+        />
+    </div>
+
     <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <x-stat-card
             label="Chiffre d'affaires"
@@ -136,7 +181,7 @@
                     />
                 @else
                     <div class="overflow-x-auto">
-                            <table class="cf-table min-w-max">
+                            <table class="cf-table 2xl:min-w-max">
                                 <thead>
                                     <tr>
                                         <th class="min-w-[100px]">Numéro</th>
@@ -148,7 +193,7 @@
                             <tbody>
                                 @foreach ($dernieresCommandes as $commande)
                                     <tr class="hover:bg-brand-50/40 dark:hover:bg-white/[0.03]">
-                                        <td class="whitespace-nowrap">
+                                        <td data-label="Numéro" class="whitespace-nowrap">
                                             <a href="{{ route('commandes.show', $commande) }}" class="cf-link font-semibold">
                                                 {{ $commande->numero }}
                                             </a>
@@ -156,13 +201,13 @@
                                                 {{ $commande->date_commande->format('d/m/Y') }}
                                             </span>
                                         </td>
-                                        <td class="whitespace-nowrap">
+                                        <td data-label="Client" class="whitespace-nowrap">
                                             <span class="font-medium">{{ $commande->client?->nom ?? '—' }}</span>
                                             @if ($commande->tissu)
                                                 <span class="block text-xs text-brand-500">{{ $commande->tissu }}</span>
                                             @endif
                                         </td>
-                                        <td class="whitespace-nowrap">
+                                        <td data-label="Statut" class="whitespace-nowrap">
                                             <span class="cf-badge {{ $commande->statutBadgeClass() }}">
                                                 <i class="{{ $commande->getStatutEnum()->icon() }} text-[0.7em]" aria-hidden="true"></i>
                                                 {{ $commande->statutLabel() }}
@@ -173,7 +218,7 @@
                                                 </span>
                                             @endif
                                         </td>
-                                        <td class="text-right tabular-nums whitespace-nowrap">
+                                        <td data-label="Solde" class="text-right tabular-nums whitespace-nowrap">
                                             @if ((float) $commande->solde > 0)
                                                 <span class="font-semibold text-brand-accent">
                                                     {{ number_format((float) $commande->solde, 0, ',', ' ') }}

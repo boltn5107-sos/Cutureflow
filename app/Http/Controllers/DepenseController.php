@@ -79,6 +79,8 @@ class DepenseController extends Controller
 
     public function update(DepenseRequest $request, Depense $depense): RedirectResponse
     {
+        $this->authorize('update', $depense);
+
         $depense->update($request->safe()->all());
 
         return redirect()

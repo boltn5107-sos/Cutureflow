@@ -28,8 +28,14 @@ class MesureController extends Controller
             ->when($request->filled('categorie'), fn ($q) => $q->where('categorie', $request->string('categorie')->toString()))
             ->latest('date_mesure')
             ->latest('id')
-            ->paginate(20)
-            ->withQueryString();
+            ->get();
+
+        /*
+         * Une carte par jour de prise : le reçu de l'enregistrement a laissé
+         * la place à un carnet permanent, ordonné du relevé le plus récent au
+         * plus ancien.
+         */
+        $relevesParDate = $client->relevesMesures($mesures);
 
         $historique = $client->mesures()
             ->latest('date_mesure')
@@ -53,6 +59,7 @@ class MesureController extends Controller
         return view('mesures.index', [
             'client' => $client,
             'mesures' => $mesures,
+            'relevesParDate' => $relevesParDate,
             'historique' => $historique,
             'mesuresComparees' => $mesuresComparees,
             'catalogue' => Mesure::catalogue(),
@@ -97,12 +104,15 @@ class MesureController extends Controller
 
         $total = count($enregistrees);
 
-        return back()->with(
-            'success',
-            $total > 1
-                ? "{$total} mesures ont été enregistrées."
-                : 'La mesure « '.$request->validated('mesures')[0]['libelle'].' » a été enregistrée.',
-        );
+        /*
+         * Le reçu « Relevé enregistré » a été remplacé par la section
+         * permanente « Relevé des mesures », ordonnée du jour le plus récent
+         * au plus ancien : la prise qui vient d'être validée apparaît donc
+         * tout en haut, sans qu'un flash éphémère soit nécessaire.
+         */
+        return back()->with('success', $total > 1
+            ? "{$total} mesures ont été enregistrées."
+            : 'La mesure « '.$request->validated('mesures')[0]['libelle'].' » a été enregistrée.');
     }
 
     public function update(Request $request, Mesure $mesure): RedirectResponse

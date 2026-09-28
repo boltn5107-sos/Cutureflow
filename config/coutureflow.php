@@ -33,6 +33,31 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Indicatif téléphonique du pays
+    |--------------------------------------------------------------------------
+    |
+    | Les numéros sont saisis en format local (« 77 000 00 00 »). Les liens
+    | de partage, qui ouvrent une application tierce, exigent le format
+    | international : cet indicatif est donc ajouté une fois pour toutes,
+    | plutôt qu'à chaque partage.
+    |
+    */
+
+    'indicatif_pays' => env('PAYS_INDICATIF', '221'),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Relances
+    |--------------------------------------------------------------------------
+    | Les suggestions de relance existent mais restent masquées le temps que
+    | le tri soit jugé pertinent : le service, la page et les tests sont en
+    | place, seul l'accès disparaît de la navigation et du tableau de bord.
+    | Passer RELANCES_ACTIVES à true les réactive.
+    */
+    'relances_actives' => env('RELANCES_ACTIVES', false),
+
+    /*
+    |--------------------------------------------------------------------------
     | Abonnement atelier
     |--------------------------------------------------------------------------
     */
@@ -93,32 +118,33 @@ return [
     | affichées la voient automatiquement, sans code supplémentaire.
     */
     'catalogue_mesures' => [
+        /*
+         * Les icônes sont choisies dans Font Awesome 7 Free (solid) et
+         * vérifiées une à une dans node_modules : une icône absente du CSS
+         * s'afficherait en carré vide, silencieusement.
+         *
+         * Aucun jeu d'icônes ne dessine un corps humain ou un mètre ruban :
+         * il faut donc jouer sur des silhouettes de vêtements et des
+         * symboles de mesure, chaque famille devant figurer ce qu'elle
+         * représente réellement, sans laisser croire à une précision
+         * qu'elle n'a pas (fa-ruler-vertical ne figure pas le haut du corps).
+         *
+         * Les mesures retirées du catalogue (tour de bras, tour de genou,
+         * tour de mollet) gardent leurs relevés existants : ceux-ci
+         * s'affichent encore sur la fiche du client avec une icône de repli.
+         */
         'Haut du corps' => [
-            ['code' => 'hauteur_corps', 'libelle' => 'Haut du corps', 'icone' => 'fa-ruler-vertical'],
+            ['code' => 'hauteur_corps', 'libelle' => 'Haut du corps', 'icone' => 'fa-ruler-combined'],
             ['code' => 'tour_poitrine', 'libelle' => 'Tour de poitrine', 'icone' => 'fa-shirt'],
-            ['code' => 'tour_taille', 'libelle' => 'Tour de taille', 'icone' => 'fa-ellipsis'],
-            ['code' => 'tour_hanches', 'libelle' => 'Tour de hanches', 'icone' => 'fa-ellipsis-vertical'],
-            ['code' => 'carrure', 'libelle' => 'Carrure', 'icone' => 'fa-arrows-left-right'],
-            ['code' => 'largeur_epaules', 'libelle' => 'Largeur épaules', 'icone' => 'fa-expand'],
+            ['code' => 'tour_taille', 'libelle' => 'Tour de taille', 'icone' => 'fa-ellipsis-vertical'],
+            ['code' => 'tour_hanches', 'libelle' => 'Tour de hanches', 'icone' => 'fa-vest'],
+            ['code' => 'largeur_epaules', 'libelle' => 'Largeur épaules', 'icone' => 'fa-arrows-left-right'],
             ['code' => 'tour_cou', 'libelle' => 'Tour de cou', 'icone' => 'fa-mitten'],
             ['code' => 'longueur_epaule', 'libelle' => 'Longueur épaule', 'icone' => 'fa-ruler-horizontal'],
-            ['code' => 'longueur_manche', 'libelle' => 'Longueur manche', 'icone' => 'fa-vest'],
-            ['code' => 'tour_bras', 'libelle' => 'Tour de bras', 'icone' => 'fa-hand-fist'],
+            ['code' => 'longueur_manche', 'libelle' => 'Longueur manche', 'icone' => 'fa-tshirt'],
             ['code' => 'tour_poignet', 'libelle' => 'Tour de poignet', 'icone' => 'fa-hand'],
         ],
-        'Longueurs' => [
-            ['code' => 'longueur_chemise', 'libelle' => 'Longueur chemise', 'icone' => 'fa-tshirt'],
-            ['code' => 'longueur_veste', 'libelle' => 'Longueur veste', 'icone' => 'fa-user-tie'],
-            ['code' => 'longueur_robe', 'libelle' => 'Longueur robe', 'icone' => 'fa-person-dress'],
-            ['code' => 'longueur_jupe', 'libelle' => 'Longueur jupe', 'icone' => 'fa-caret-down'],
-            ['code' => 'longueur_pantalon', 'libelle' => 'Longueur pantalon', 'icone' => 'fa-ruler-combined'],
-            ['code' => 'entrejambe', 'libelle' => 'Entrejambe', 'icone' => 'fa-arrows-up-down'],
-        ],
         'Bas du corps' => [
-            ['code' => 'tour_cuisse', 'libelle' => 'Tour de cuisse', 'icone' => 'fa-person'],
-            ['code' => 'tour_genou', 'libelle' => 'Tour de genou', 'icone' => 'fa-gauge'],
-            ['code' => 'tour_mollet', 'libelle' => 'Tour de mollet', 'icone' => 'fa-shoe-prints'],
-            ['code' => 'tour_cheville', 'libelle' => 'Tour de cheville', 'icone' => 'fa-socks'],
             ['code' => 'fourche_devant', 'libelle' => 'Fourche devant', 'icone' => 'fa-angle-down'],
             ['code' => 'fourche_dos', 'libelle' => 'Fourche dos', 'icone' => 'fa-angle-up'],
         ],

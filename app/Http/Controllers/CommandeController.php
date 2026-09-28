@@ -8,9 +8,6 @@ use App\Http\Requests\CommandeStatutRequest;
 use App\Models\Client;
 use App\Models\Commande;
 use App\Models\Modele;
-use App\Notifications\CommandePreteNotification;
-use App\Notifications\LivraisonProcheNotification;
-use App\Notifications\SoldeRestantNotification;
 use App\Services\NotificationService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -111,6 +108,8 @@ class CommandeController extends Controller
 
     public function update(CommandeRequest $request, Commande $commande): RedirectResponse
     {
+        $this->authorize('update', $commande);
+
         $commande->update([
             ...$request->safe()->except(['date_livraison_reelle']),
             'date_livraison_reelle' => $request->input('date_livraison_reelle'),

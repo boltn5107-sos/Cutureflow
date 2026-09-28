@@ -2,8 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\CommandeStatut;
-use App\Enums\DepenseCategorie;
 use App\Enums\PaiementMethode;
 use App\Enums\PaiementType;
 use App\Http\Requests\PaiementRequest;
@@ -118,6 +116,8 @@ class CaisseController extends Controller
 
     public function update(PaiementRequest $request, Paiement $paiement): RedirectResponse
     {
+        $this->authorize('update', $paiement);
+
         $paiement->update($request->safe()->all());
 
         return redirect()

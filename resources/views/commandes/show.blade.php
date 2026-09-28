@@ -205,15 +205,15 @@
                                 <tbody>
                                     @foreach ($commande->paiements as $paiement)
                                         <tr>
-                                            <td class="whitespace-nowrap tabular-nums">
+                                            <td data-label="Date" class="whitespace-nowrap tabular-nums">
                                                 {{ $paiement->date_paiement?->format('d/m/Y') ?? '—' }}
                                             </td>
-                                            <td>
+                                            <td data-label="Type">
                                                 <span class="cf-badge {{ $paiement->typeBadgeClass() }}">
                                                     {{ $paiement->typeLabel() }}
                                                 </span>
                                             </td>
-                                            <td>
+                                            <td data-label="Méthode">
                                                 <span class="flex items-center gap-1.5 whitespace-nowrap">
                                                     <i class="{{ $paiement->methodeIcon() }} w-4 text-center text-brand-400" aria-hidden="true"></i>
                                                     {{ $paiement->methodeLabel() }}
@@ -222,7 +222,7 @@
                                                     <span class="block text-xs text-brand-500 dark:text-brand-400">{{ $paiement->reference }}</span>
                                                 @endif
                                             </td>
-                                            <td class="max-w-xs text-xs">
+                                            <td data-label="Détails" class="max-w-xs text-xs">
                                                 @if ($paiement->description)
                                                     <span class="line-clamp-2">{{ $paiement->description }}</span>
                                                 @else
@@ -234,10 +234,10 @@
                                                     </span>
                                                 @endif
                                             </td>
-                                            <td class="text-right font-semibold tabular-nums">
+                                            <td data-label="Montant" class="text-right font-semibold tabular-nums">
                                                 {{ number_format((float) $paiement->montant, 0, ',', ' ') }} {{ $devise }}
                                             </td>
-                                            <td>
+                                            <td data-compact>
                                                 <div class="flex items-center justify-end gap-2">
                                                     <a
                                                         href="{{ route('caisse.paiements.show', $paiement) }}"
@@ -351,9 +351,9 @@
                             <tbody>
                                 @foreach ($commande->mesures as $mesure)
                                     <tr>
-                                        <td class="font-medium">{{ $mesure->libelle }}</td>
-                                        <td class="tabular-nums">{{ $mesure->valeurFormatee() }}</td>
-                                        <td class="whitespace-nowrap tabular-nums">
+                                        <td data-label="Libellé" class="font-medium">{{ $mesure->libelle }}</td>
+                                        <td data-label="Valeur" class="tabular-nums">{{ $mesure->valeurFormatee() }}</td>
+                                        <td data-label="Date de mesure" class="whitespace-nowrap tabular-nums">
                                             {{ $mesure->date_mesure?->format('d/m/Y') ?? '—' }}
                                         </td>
                                     </tr>

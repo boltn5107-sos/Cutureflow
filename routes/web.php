@@ -1,9 +1,9 @@
 <?php
 
+use App\Http\Controllers\AccountStatusController;
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\AdminSubscriptionController;
 use App\Http\Controllers\Admin\AdminUserController;
-use App\Http\Controllers\AccountStatusController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\CaisseController;
@@ -17,6 +17,7 @@ use App\Http\Controllers\ModeleController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PlanningController;
 use App\Http\Controllers\ProfilController;
+use App\Http\Controllers\RelanceController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -72,6 +73,14 @@ Route::middleware('auth')->group(function () {
         ->name('abonnement.store');
     Route::get('/abonnement/preuve/{subscription}', [ProfilController::class, 'subscriptionProof'])
         ->name('abonnement.preuve');
+
+    /*
+     * Point d'état des notifications interrogé par le navigateur, pour la
+     * pastille et le son. Volontairement hors du groupe « atelier.valide » :
+     * un administrateur reçoit aussi des notifications et n'a pas accès à
+     * /notifications.
+     */
+    Route::get('/notifications/etat', [NotificationController::class, 'etat'])->name('notifications.etat');
 });
 
 /*
@@ -82,6 +91,16 @@ Route::middleware('auth')->group(function () {
 
 Route::middleware(['auth', 'atelier.valide'])->group(function () {
     Route::get('/tableau-de-bord', [DashboardController::class, 'index'])->name('dashboard');
+
+    /*
+    |----------------------------------------------------------------------
+    | Relances — qui rappeler depuis l'atelier
+    |----------------------------------------------------------------------
+    | Aucune transaction client, aucun envoi de message : la page liste des
+    | suggestions d'appel et enregistre celles qui ont été faites.
+    */
+    Route::get('/relances', [RelanceController::class, 'index'])->name('relances.index');
+    Route::post('/relances', [RelanceController::class, 'store'])->name('relances.store');
 
     // Profil
     Route::get('/profil', [ProfilController::class, 'edit'])->name('profil.edit');

@@ -101,19 +101,19 @@
                     <tbody>
                         @foreach ($users as $user)
                             <tr>
-                                <td>
+                                <td data-label="Atelier">
                                     <p class="font-semibold">{{ $user->atelier?->nom ?? '—' }}</p>
                                     <p class="text-xs text-brand-500">{{ $user->atelier?->ville ?? 'Ville non renseignée' }}</p>
                                 </td>
-                                <td>
+                                <td data-label="Responsable">
                                     <p class="font-medium">{{ $user->name }}</p>
                                     <p class="text-xs text-brand-500">{{ $user->email }}</p>
                                 </td>
-                                <td class="tabular-nums">
+                                <td data-label="Contact" class="tabular-nums">
                                     <a href="tel:{{ $user->phone }}" class="cf-link">{{ $user->phone }}</a>
                                 </td>
-                                <td><x-status-badge :status="$user->status" /></td>
-                                <td>
+                                <td data-label="Statut"><x-status-badge :status="$user->status" /></td>
+                                <td data-label="Dernier paiement">
                                     @if ($user->latestSubscription)
                                         <p class="tabular-nums">{{ $user->latestSubscription->date_paiement->format('d/m/Y') }}</p>
                                         <x-status-badge :status="$user->latestSubscription->statut" />
@@ -121,10 +121,10 @@
                                         <span class="text-xs text-brand-400">Aucun</span>
                                     @endif
                                 </td>
-                                <td class="text-xs whitespace-nowrap text-brand-500 tabular-nums">
+                                <td data-label="Inscription" class="text-xs whitespace-nowrap text-brand-500 tabular-nums">
                                     {{ $user->created_at->format('d/m/Y') }}
                                 </td>
-                                <td class="text-right">
+                                <td data-compact class="text-right">
                                     <a href="{{ route('admin.utilisateurs.show', $user) }}" class="cf-link text-xs font-semibold">
                                         Voir
                                         <i class="fa-solid fa-arrow-right ml-1 text-[0.6rem]" aria-hidden="true"></i>

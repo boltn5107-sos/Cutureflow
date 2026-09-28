@@ -7,7 +7,6 @@
 @section('content')
     @php
         $devise = config('coutureflow.currency');
-        $mesuresRecentes = $client->mesures->take(12);
         $commandesRecentes = $client->commandes;
     @endphp
 
@@ -162,66 +161,12 @@
                 </div>
             </section>
 
-            {{-- (3) Dernières mesures --}}
-            <section class="cf-card overflow-hidden">
-                <div class="cf-card-header">
-                    <h2 class="font-serif text-lg font-semibold">Dernières mesures</h2>
-                    <a href="{{ route('mesures.index', $client) }}" class="cf-link text-xs">
-                        Tout gérer
-                        <i class="fa-solid fa-arrow-right ml-1" aria-hidden="true"></i>
-                    </a>
-                </div>
-
-                @if ($mesuresRecentes->isEmpty())
-                    <x-empty-state
-                        icon="fa-solid fa-ruler-combined"
-                        title="Aucune mesure"
-                        message="Enregistrez le premier relevé de mesures pour ce client."
-                        :action="route('mesures.index', $client)"
-                        action-label="Prendre des mesures"
-                    />
-                @else
-                    <div class="overflow-x-auto">
-                        <table class="cf-table">
-                            <caption class="sr-only">Dernières mesures prises pour {{ $client->nom }}</caption>
-                            <thead>
-                                <tr>
-                                    <th scope="col">Mesure</th>
-                                    <th scope="col">Catégorie</th>
-                                    <th scope="col">Valeur</th>
-                                    <th scope="col">Date</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach ($mesuresRecentes as $mesure)
-                                    <tr>
-                                        <td>
-                                            <div class="flex items-center gap-2.5">
-                                                <span class="flex size-8 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-brand-accent dark:bg-white/5">
-                                                    <i class="fa-solid {{ $mesure->icone() }} text-sm" aria-hidden="true"></i>
-                                                </span>
-
-                                                <span class="font-medium">{{ $mesure->libelle }}</span>
-                                            </div>
-                                        </td>
-                                        <td class="text-xs">
-                                            @if (filled($mesure->categorie))
-                                                <span class="cf-badge">{{ $mesure->categorie }}</span>
-                                            @else
-                                                <span class="text-brand-400">—</span>
-                                            @endif
-                                        </td>
-                                        <td class="font-semibold tabular-nums">{{ $mesure->valeurFormatee() }}</td>
-                                        <td class="whitespace-nowrap tabular-nums">
-                                            {{ $mesure->date_mesure?->format('d/m/Y') ?? '—' }}
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                @endif
-            </section>
+            {{-- (3) Résumé des mesures — une carte par relevé, dans l'ordre de son histoire --}}
+            <x-mesures-resume
+                :releves="$relevesMesures"
+                :total="$relevesMesures->sum(fn ($releve) => $releve->count())"
+                :client="$client"
+            />
 
             {{-- (4) Commandes récentes --}}
             <section class="cf-card overflow-hidden">

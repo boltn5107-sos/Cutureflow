@@ -102,25 +102,25 @@
                     <tbody>
                         @foreach ($subscriptions as $subscription)
                             <tr>
-                                <td>
+                                <td data-label="Atelier">
                                     <p class="font-semibold">{{ $subscription->user?->atelier?->nom ?? $subscription->user?->name ?? '—' }}</p>
                                     <p class="text-xs text-brand-500">{{ $subscription->user?->email }}</p>
                                 </td>
-                                <td class="font-semibold tabular-nums">
+                                <td data-label="Montant" class="font-semibold tabular-nums">
                                     {{ number_format((float) $subscription->montant, 0, ',', ' ') }}
                                     <span class="text-xs font-normal text-brand-500">FCFA</span>
                                 </td>
-                                <td class="tabular-nums">{{ $subscription->date_paiement->format('d/m/Y') }}</td>
-                                <td class="tabular-nums">{{ $subscription->wave_number_used ?: '—' }}</td>
-                                <td class="text-xs text-brand-500">{{ $subscription->wave_reference ?: '—' }}</td>
-                                <td><x-status-badge :status="$subscription->statut" /></td>
-                                <td class="text-xs text-brand-500">
+                                <td data-label="Payé le" class="tabular-nums">{{ $subscription->date_paiement->format('d/m/Y') }}</td>
+                                <td data-label="Wave utilisé" class="tabular-nums">{{ $subscription->wave_number_used ?: '—' }}</td>
+                                <td data-label="Référence" class="text-xs text-brand-500">{{ $subscription->wave_reference ?: '—' }}</td>
+                                <td data-label="Statut"><x-status-badge :status="$subscription->statut" /></td>
+                                <td data-label="Validé par" class="text-xs text-brand-500">
                                     {{ $subscription->reviewer?->name ?? '—' }}
                                     @if ($subscription->reviewed_at)
                                         <span class="block tabular-nums">{{ $subscription->reviewed_at->format('d/m/Y') }}</span>
                                     @endif
                                 </td>
-                                <td class="text-right">
+                                <td data-compact class="text-right">
                                     <div class="flex items-center justify-end gap-2">
                                         @if ($subscription->hasProof())
                                             <a

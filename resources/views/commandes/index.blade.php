@@ -148,7 +148,7 @@
             />
         @else
             <div class="overflow-x-auto">
-                <table class="cf-table sm:min-w-64">
+                <table class="cf-table 2xl:min-w-64">
                     <caption class="sr-only">Liste des commandes de l'atelier</caption>
 <thead>
 <tr>
@@ -167,13 +167,13 @@
                                 @php $enRetard = $commande->estEnRetard(); @endphp
 
                                 <tr>
-                                    <td class="sm:px-2 sm:py-1.5">
+                                    <td data-label="Numéro" class="sm:px-2 sm:py-1.5">
                                         <a href="{{ route('commandes.show', $commande) }}" class="cf-link font-semibold text-sm">
                                             {{ $commande->numero }}
                                         </a>
                                     </td>
 
-                                    <td class="sm:px-2 sm:py-1.5">
+                                    <td data-label="Client / Modèle" class="sm:px-2 sm:py-1.5">
                                         @if ($commande->client)
                                             <a href="{{ route('clients.show', $commande->client) }}" class="font-medium hover:underline text-sm">
                                                 {{ $commande->client->nom }}
@@ -189,9 +189,9 @@
                                         @endif
                                     </td>
 
-                                    <td class="text-xs sm:px-2 sm:py-1.5">{{ $commande->tissu ?: '—' }}</td>
+                                    <td data-label="Tissu" class="text-xs sm:px-2 sm:py-1.5">{{ $commande->tissu ?: '—' }}</td>
 
-                                    <td class="sm:px-2 sm:py-1.5">
+                                    <td data-label="Statut" class="sm:px-2 sm:py-1.5">
                                         <span class="cf-badge {{ $commande->statutBadgeClass() }}">
                                             <i class="{{ $commande->getStatutEnum()->icon() }} text-[0.7em]" aria-hidden="true"></i>
                                             {{ $commande->statutLabel() }}
@@ -204,15 +204,15 @@
                                         @endif
                                     </td>
 
-                                    <td class="whitespace-nowrap tabular-nums sm:px-2 sm:py-1.5 text-sm">
+                                    <td data-label="Commande" class="whitespace-nowrap tabular-nums sm:px-2 sm:py-1.5 text-sm">
                                         {{ $commande->date_commande?->format('d/m/Y') ?? '—' }}
                                     </td>
 
-                                    <td class="whitespace-nowrap tabular-nums {{ $enRetard ? 'font-semibold text-red-600 dark:text-red-400' : '' }} sm:px-2 sm:py-1.5 text-sm">
+                                    <td data-label="Livraison prévue" class="whitespace-nowrap tabular-nums {{ $enRetard ? 'font-semibold text-red-600 dark:text-red-400' : '' }} sm:px-2 sm:py-1.5 text-sm">
                                         {{ $commande->date_livraison_prevue?->format('d/m/Y') ?? '—' }}
                                     </td>
 
-                                    <td class="text-right tabular-nums sm:px-2 sm:py-1.5">
+                                    <td data-label="Financier" class="text-right tabular-nums sm:px-2 sm:py-1.5">
                                         <span class="block font-semibold text-sm">
                                             {{ number_format((float) $commande->prix_total, 0, ',', ' ') }}
                                             <span class="text-[0.65rem] font-normal text-brand-500 dark:text-brand-400">{{ $devise }}</span>
@@ -233,7 +233,7 @@
                                         @endif
                                     </td>
 
-                                    <td class="text-right sm:px-2 sm:py-1.5">
+                                    <td data-compact class="text-right sm:px-2 sm:py-1.5">
                                         <a
                                             href="{{ route('commandes.edit', $commande) }}"
                                             class="cf-btn-secondary cf-btn-sm"

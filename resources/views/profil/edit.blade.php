@@ -71,13 +71,18 @@
                             />
                         </div>
 
-                        <div class="sm:col-span-2">
-                            <x-form.text
-                                name="adresse"
-                                label="Adresse"
-                                :value="$atelier?->adresse"
-                            />
-                        </div>
+                        <x-form.text
+                            name="adresse"
+                            label="Adresse"
+                            :value="$atelier?->adresse"
+                        />
+
+                        <x-form.text
+                            name="atelier_telephone"
+                            label="Téléphone de l'atelier"
+                            :value="$atelier?->telephone"
+                            hint="Différent de votre numéro personnel."
+                        />
 
                         <x-form.text
                             name="ville"

@@ -25,7 +25,20 @@
         ],
     ];
 
-    $unreadCount = auth()->user()?->unreadNotifications()->count() ?? 0;
+    /*
+     * Les relances sont conditionnées par configuration : la page et le
+     * service existent, mais l'entrée reste masquée tant que
+     * coutureflow.relances_actives vaut false.
+     */
+    if (config('coutureflow.relances_actives')) {
+        $nav[0]['items'][] = ['route' => 'relances.index', 'label' => 'Relances', 'icon' => 'fa-solid fa-bell-concierge'];
+    }
+
+    /*
+     * $unreadCount vient du composeur de vue posé sur layouts.app : le
+     * recalculer ici coûtait un second COUNT sur la même table, à chaque
+     * page, alors que la valeur est déjà disponible.
+     */
 @endphp
 
 <aside
@@ -72,10 +85,20 @@
                             >
                                 <i class="{{ $item['icon'] }} w-4 text-center" aria-hidden="true"></i>
                                 <span class="flex-1">{{ $item['label'] }}</span>
-                                @if ($item['route'] === 'notifications.index' && $unreadCount > 0)
-                                    <span class="rounded-full bg-brand-accent px-1.5 py-0.5 text-[0.65rem] font-semibold text-white">
-                                        {{ $unreadCount > 99 ? '99+' : $unreadCount }}
-                                    </span>
+                                @if ($item['route'] === 'notifications.index')
+                                    {{--
+                                        Toujours présent dans le DOM, y compris
+                                        à zéro : c'est le store qui décide de
+                                        l'afficher, sinon la pastille
+                                        n'apparaîtrait pas pour une notification
+                                        reçue après l'ouverture de la page.
+                                    --}}
+                                    <span
+                                        x-show="$store.notifications.nonLues > 0"
+                                        x-cloak
+                                        class="rounded-full bg-brand-accent px-1.5 py-0.5 text-[0.65rem] font-semibold text-white"
+                                        x-text="$store.notifications.nonLues > 99 ? '99+' : $store.notifications.nonLues"
+                                    ></span>
                                 @endif
                             </a>
                         </li>

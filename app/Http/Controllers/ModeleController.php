@@ -10,7 +10,6 @@ use App\Services\ModelePhotoService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ModeleController extends Controller
@@ -97,6 +96,8 @@ class ModeleController extends Controller
 
     public function update(ModeleRequest $request, Modele $modele): RedirectResponse
     {
+        $this->authorize('update', $modele);
+
         $modele->update([
             ...$request->safe()->except('photos'),
             'is_active' => $request->boolean('is_active'),

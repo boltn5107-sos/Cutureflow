@@ -72,7 +72,7 @@ class ClientController extends Controller
         $this->authorize('view', $client);
 
         $client->load([
-            'mesures' => fn ($q) => $q->latest('date_mesure')->latest('id')->limit(40),
+            'mesures' => fn ($q) => $q->latest('date_mesure')->latest('id'),
             'commandes' => fn ($q) => $q->latest('date_commande')->limit(10),
         ]);
 
@@ -80,6 +80,7 @@ class ClientController extends Controller
             'client' => $client,
             'paiements' => $client->paiements()->limit(10)->get(),
             'rendezVous' => $client->rendezVous()->limit(5)->get(),
+            'relevesMesures' => $client->relevesMesures(),
         ]);
     }
 
@@ -95,6 +96,8 @@ class ClientController extends Controller
 
     public function update(ClientRequest $request, Client $client): RedirectResponse
     {
+        $this->authorize('update', $client);
+
         $data = [
             'nom' => $request->string('nom')->toString(),
             'telephone' => $request->string('telephone')->toString(),

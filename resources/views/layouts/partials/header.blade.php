@@ -1,6 +1,9 @@
 <header
     class="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-brand-200/70 bg-white/85 px-4 backdrop-blur-md sm:px-6 lg:px-8 dark:border-white/10 dark:bg-brand-dark/85"
     x-data="{ menu: false, profil: false, notifs: false }"
+    data-notifications="{{ route('notifications.etat') }}"
+    data-dernier-id="{{ $dernierNotificationId }}"
+    data-non-lues="{{ $unreadCount }}"
     @keydown.escape.window="$store.sidebar.open = false; menu = false; profil = false; notifs = false"
 >
     <a href="{{ route('dashboard') }}" class="flex items-center gap-2.5 lg:hidden">
@@ -40,6 +43,30 @@
             <i class="fa-solid fa-sun hidden dark:inline" aria-hidden="true"></i>
         </button>
 
+        {{--
+            Son des notifications. Le point ambre signale que le navigateur
+            n'autorise pas encore le son : il n'est débloqué qu'après une
+            interaction, et le bouton ci-dessous en est une.
+        --}}
+        <button
+            type="button"
+            x-on:click="$store.notifications.basculerSon()"
+            class="relative flex size-9 items-center justify-center rounded-lg text-brand-700 transition hover:bg-brand-100/70 dark:text-brand-200 dark:hover:bg-white/10"
+            x-bind:aria-label="$store.notifications.sonActif ? 'Couper le son des notifications' : 'Activer le son des notifications'"
+            x-bind:title="$store.notifications.sonActif
+                ? ($store.notifications.sonPret ? 'Son des notifications activé' : 'Cliquez pour autoriser le son des notifications')
+                : 'Son des notifications coupé'"
+        >
+            <i class="fa-solid fa-volume-high" x-show="$store.notifications.sonActif" aria-hidden="true"></i>
+            <i class="fa-solid fa-volume-xmark" x-show="! $store.notifications.sonActif" aria-hidden="true"></i>
+
+            <span
+                x-cloak
+                x-show="$store.notifications.sonActif && ! $store.notifications.sonPret"
+                class="absolute top-1.5 right-1.5 size-2 rounded-full bg-amber-500 ring-2 ring-white dark:ring-brand-dark"
+            ></span>
+        </button>
+
         <div class="relative" @click.outside="notifs = false">
             <button
                 type="button"
@@ -48,9 +75,11 @@
                 aria-label="Notifications"
             >
                 <i class="fa-regular fa-bell" aria-hidden="true"></i>
-                @if ($unreadCount > 0)
-                    <span class="absolute top-1.5 right-1.5 size-2 rounded-full bg-brand-accent ring-2 ring-white dark:ring-brand-dark"></span>
-                @endif
+                <span
+                    x-cloak
+                    x-show="$store.notifications.nonLues > 0"
+                    class="absolute top-1.5 right-1.5 size-2 rounded-full bg-brand-accent ring-2 ring-white dark:ring-brand-dark"
+                ></span>
             </button>
 
             <div
@@ -61,18 +90,26 @@
             >
                 <div class="flex items-center justify-between border-b border-brand-200 px-4 py-3 dark:border-white/10">
                     <p class="text-sm font-semibold">Notifications</p>
-                    @if ($unreadCount > 0)
-                        <a href="{{ route('notifications.read-all') }}" class="text-xs font-medium text-brand-600 hover:underline dark:text-brand-300">
-                            Tout marquer comme lu
-                        </a>
-                    @endif
+                    <a
+                        href="{{ route('notifications.read-all') }}"
+                        x-show="$store.notifications.nonLues > 0"
+                        x-cloak
+                        class="text-xs font-medium text-brand-600 hover:underline dark:text-brand-300"
+                    >
+                        Tout marquer comme lu
+                    </a>
                 </div>
 
                 <div class="max-h-80 overflow-y-auto">
                     @forelse (auth()->user()?->notifications()->latest()->limit(6)->get() ?? [] as $item)
+                        {{--
+                            Le clic passe par notifications.read : sans cela la
+                            notification resterait non lue, et la pastille
+                            compterait encore ce que l'on vient d'ouvrir.
+                        --}}
                         <a
-                            href="{{ $item->data['url'] ?? route('notifications.index') }}"
-                            class="flex gap-3 border-b border-brand-100 px-4 py-3 transition last:border-b-0 hover:bg-brand-50 dark:border-white/5 dark:hover:bg-white/5"
+                            href="{{ route('notifications.read', $item->id) }}"
+                            class="flex gap-3 border-b border-brand-100 px-4 py-3 transition last:border-b-0 hover:bg-brand-50 dark:border-white/5 dark:hover:bg-white/5 {{ $item->read_at ? 'opacity-60' : '' }}"
                         >
                             <span class="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-lg {{ $item->data['tone'] ?? 'bg-brand-100 text-brand-700 dark:bg-white/10 dark:text-brand-200' }}">
                                 <i class="{{ $item->data['icon'] ?? 'fa-regular fa-bell' }} text-xs" aria-hidden="true"></i>

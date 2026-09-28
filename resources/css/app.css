@@ -188,6 +188,24 @@
         @apply px-3 py-1.5 text-xs;
     }
 
+    /*
+     * Tableaux
+     *
+     * Sur téléphone, un tableau à 5 colonnes et plus est illisible : le
+     * défilement horizontal oblige à faire glisser la page dans tous les
+     * sens et masque la colonne de droite. La règle ci-dessous transforme
+     * chaque ligne en carte empilée, où chaque cellule porte en étiquette
+     * l'en-tête de sa colonne.
+     *
+     * Le mode carte s'arrête à 2xl, et non à md : entre 768 et 1536 px, les
+     * tableaux à colonnes multiples restent bien plus lisibles en tableau,
+     * et empilés ils donneraient des cartes très larges et vides.
+     *
+     * data-label doit reprendre le libellé exact de l'en-tête, et x-data-label
+     * sert aux colonnes dont le titre n'est pas visible sur mobile (les
+     * colonnes de compaction). Sans étiquette, la cellule est muette.
+     */
+
     .cf-table {
         @apply w-full border-collapse text-left text-sm;
     }
@@ -198,6 +216,91 @@
 
     .cf-table tbody td {
         @apply border-b border-brand-100 px-4 py-3 align-middle text-brand-800 dark:border-white/5 dark:text-brand-100;
+    }
+
+    /* Mode carte : appliqué sous 2xl, réactivé en tableau dès 2xl. */
+    @media (width < 96rem) {
+        .cf-table thead {
+            @apply sr-only;
+        }
+
+        .cf-table,
+        .cf-table tbody,
+        .cf-table tr,
+        .cf-table td {
+            @apply block;
+        }
+
+        .cf-table tr {
+            @apply mb-3 rounded-xl border border-brand-200/70 bg-white p-1 last:mb-0 dark:border-white/10 dark:bg-white/[0.02];
+        }
+
+        /*
+         * Ligne d'édition dépliée : elle occupe un colspan et contient un
+         * formulaire, pas des données. En carte, elle deviendrait étroite et
+         * décollée de la ligne qu'elle modifie — on l'annule donc, pour qu'elle
+         * reste pleine largeur juste sous sa ligne.
+         */
+        .cf-table tbody tr[data-edition] {
+            @apply mb-3 p-0;
+        }
+
+        /*
+         * La cellule devient une grille à deux colonnes : l'étiquette à
+         * gauche, la valeur à droite. Une grille, et non un flex, parce que
+         * certaines cellules contiennent plusieurs blocs (nom + ville, nom
+         * + date) qui doivent rester empilés dans la colonne de droite.
+         */
+        .cf-table tbody td {
+            @apply grid grid-cols-[minmax(4.5rem,30%)_1fr] items-start gap-x-4 border-b border-brand-100/70 px-3 py-2.5 text-sm last:border-b-0 dark:border-white/5;
+        }
+
+        /*
+         * L'étiquette vient de l'en-tête correspondant. data-label
+         * transpose l'en-tête réel sur la cellule, ce qui évite de
+         * dupliquer le libellé en dur dans chaque vue.
+         */
+        .cf-table tbody td::before {
+            content: attr(data-label);
+            grid-column: 1;
+            @apply text-xs font-semibold tracking-wide text-brand-500 uppercase;
+        }
+
+        /*
+         * Tout le contenu passe en colonne 2. Chaque bloc y est empilé sur
+         * sa propre ligne implicite, ce qui garde nom + ville (ou nom + date)
+         * verticaux ; l'étiquette, alignée en haut, ne prend qu'une ligne.
+         */
+        .cf-table tbody td > * {
+            grid-column: 2;
+            min-width: 0;
+        }
+
+        /*
+         * Colonnes de compaction (actions, montants secondaires) : on
+         * retire l'étiquette, le contenu se suffit à lui-même et reste
+         * aligné à droite comme en tableau.
+         */
+        .cf-table tbody td[data-compact] {
+            @apply grid-cols-[1fr];
+        }
+
+        .cf-table tbody td[data-compact]::before {
+            content: none;
+        }
+
+        .cf-table tbody td[data-compact] > * {
+            @apply justify-self-end;
+        }
+
+        /* Cellule de formulaire : ni étiquette, ni grille, ni padding. */
+        .cf-table tbody td[data-edition-cell] {
+            @apply block p-0;
+        }
+
+        .cf-table tbody td[data-edition-cell]::before {
+            content: none;
+        }
     }
 
     .cf-table tbody tr:last-child td {

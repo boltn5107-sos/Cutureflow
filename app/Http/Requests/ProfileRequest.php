@@ -21,6 +21,7 @@ class ProfileRequest extends FormRequest
             'email' => ['required', 'string', 'email', 'max:190', Rule::unique('users', 'email')->ignore($user->id)],
             'phone' => ['required', 'string', 'min:6', 'max:40'],
             'atelier_nom' => ['required', 'string', 'min:3', 'max:150'],
+            'atelier_telephone' => ['nullable', 'string', 'min:6', 'max:40'],
             'adresse' => ['nullable', 'string', 'max:255'],
             'ville' => ['nullable', 'string', 'max:120'],
             'ninea' => ['nullable', 'string', 'max:40'],
@@ -33,6 +34,7 @@ class ProfileRequest extends FormRequest
             'name' => 'nom du responsable',
             'atelier_nom' => 'nom de l\'atelier',
             'phone' => 'téléphone',
+            'atelier_telephone' => 'téléphone de l\'atelier',
         ];
     }
 
@@ -42,6 +44,7 @@ class ProfileRequest extends FormRequest
             'name.required' => 'Votre nom est obligatoire.',
             'atelier_nom.required' => 'Le nom de l\'atelier est obligatoire.',
             'phone.required' => 'Le téléphone est obligatoire.',
+            'atelier_telephone.min' => 'Le téléphone de l\'atelier doit contenir au moins 6 caractères.',
             'email.unique' => 'Cette adresse email est déjà utilisée.',
         ];
     }

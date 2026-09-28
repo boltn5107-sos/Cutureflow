@@ -44,7 +44,13 @@
     <div class="min-h-screen flex">
         @include('layouts.partials.sidebar')
 
-        <div class="flex min-w-0 flex-1 flex-col">
+        {{--
+            La barre latérale est en position fixe dès lg : sans ce décalage,
+            elle passerait sous le contenu. La largeur w-72 du <aside> est donc
+            reprise ici. Sous lg, elle est hors écran (-translate-x-full) et
+            aucun décalage n'est nécessaire.
+        --}}
+        <div class="flex min-w-0 flex-1 flex-col lg:pl-72">
             @include('layouts.partials.header')
 
             <main id="main-content" class="flex-1 px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
@@ -67,6 +73,8 @@
     ></div>
 
     @include('layouts.partials.confirm-modal')
+
+    @include('layouts.partials.notification-toasts')
 
     @stack('modals')
     @stack('scripts')

@@ -1,8 +1,8 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
 
 @section('title', 'Mesures de '.$client->nom)
 @section('header_title', 'Mesures de '.$client->nom)
-@section('header_subtitle', number_format($mesures->total(), 0, ',', ' ').' mesure(s) enregistrée(s)')
+@section('header_subtitle', number_format($mesures->count(), 0, ',', ' ').' mesure(s) enregistrée(s)')
 
 @section('content')
     @php
@@ -107,7 +107,16 @@
                     </span>
                 </div>
 
-                <form method="POST" action="{{ route('mesures.store', $client) }}">
+                {{--
+                    Le bouton d'enregistrement est dans le formulaire, sous le
+                    commentaire : c'est là que l'on termine sa saisie, on n'a
+                    pas à chercher une barre d'action ailleurs dans la page.
+                --}}
+                <form
+                    id="form-mesures"
+                    method="POST"
+                    action="{{ route('mesures.store', $client) }}"
+                >
                     @csrf
 
                     <div class="space-y-5 p-5 sm:p-6">
@@ -121,32 +130,48 @@
                             de zone qui alourdissaient la lecture sur téléphone. Le
                             regroupement par zone du corps est détaillé dans
                             l'encart « Catalogue des mesures », à droite.
+
+                            L'ancre permet au bouton « Autre mesure » de remonter
+                            ici. Le défilement s'arrête à scroll-mt-6 pour que la
+                            première rangée ne colle pas au bord de l'écran.
                         --}}
-                        <div class="grid grid-cols-2 gap-2 md:grid-cols-3 lg:grid-cols-4">
+                        <div
+                            id="palette-mesures"
+                            class="grid scroll-mt-6 grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-4"
+                        >
                             @foreach ($catalogueParCode as $code => $entree)
                                 {{--
                                     Les couleurs de la tuile sont entièrement pilotées par
                                     Alpine : la classe statique ne porte que la mise en page.
                                     Mélanger les deux ferait dépendre l'état retenu de
                                     l'ordre d'émission des utilitaires Tailwind.
+
+                                    Le clic passe par basculer(), qui ajoute la mesure puis
+                                    amène le curseur sur son champ : le tailleur n'a pas
+                                    à faire défiler la page pour aller le remplir.
                                 --}}
-<button
-                                     type="button"
-                                     class="flex min-h-16 flex-col items-center justify-center gap-1.5 rounded-xl border px-2 py-2.5 text-center transition focus-visible:ring-2 focus-visible:ring-brand-accent focus-visible:ring-offset-1 focus-visible:outline-none dark:focus-visible:ring-offset-brand-dark"
-                                     x-on:click="basculer(@js($code)); document.getElementById('valeur-' + @js($code))?.focus()"
-                                     x-bind:aria-pressed="contient(@js($code)) ? 'true' : 'false'"
-                                     x-bind:class="contient(@js($code))
-                                         ? 'border-brand-accent bg-brand-accent/10'
-                                         : 'border-brand-200 bg-white hover:border-brand-400 hover:bg-brand-50 dark:border-white/10 dark:bg-white/5 dark:hover:border-brand-500/60'"
-                                     title="{{ $entree['zone'] }} — {{ $entree['libelle'] }}"
-                                 >
+                                <button
+                                    type="button"
+                                    class="flex min-h-14 flex-col items-center justify-center gap-1 rounded-lg border px-1.5 py-2 text-center transition focus-visible:ring-2 focus-visible:ring-brand-accent focus-visible:ring-offset-1 focus-visible:outline-none dark:focus-visible:ring-offset-brand-dark"
+                                    x-on:click="basculer(@js($code))"
+                                    x-bind:aria-pressed="contient(@js($code)) ? 'true' : 'false'"
+                                    x-bind:class="contient(@js($code))
+                                        ? 'border-brand-accent bg-brand-accent/10'
+                                        : 'border-brand-200 bg-white hover:border-brand-400 hover:bg-brand-50 dark:border-white/10 dark:bg-white/5 dark:hover:border-brand-500/60'"
+                                    title="{{ $entree['zone'] }} — {{ $entree['libelle'] }}"
+                                >
                                     <i
-                                        class="fa-solid {{ $entree['icone'] }} text-lg"
+                                        class="fa-solid {{ $entree['icone'] }} text-base"
                                         :class="contient(@js($code)) ? 'text-brand-accent' : 'text-brand-500 dark:text-brand-300'"
                                         aria-hidden="true"
                                     ></i>
 
-                                    <span class="text-[0.7rem] leading-tight font-medium text-brand-800 dark:text-brand-100">
+                                    {{--
+                                        Les intitulés les plus longs passent sur deux
+                                        lignes plutôt que d'étirer la tuile : c'est
+                                        ce qui gardait la grille large sur téléphone.
+                                    --}}
+                                    <span class="text-[0.65rem] leading-tight font-medium text-brand-800 dark:text-brand-100">
                                         {{ $entree['libelle'] }}
                                     </span>
                                 </button>
@@ -260,6 +285,22 @@
                                     </div>
                                 </template>
                             </div>
+
+                            {{--
+                                Sens inverse du défilement : une fois la valeur
+                                saisie, ce bouton ramène à la palette sans avoir à
+                                faire défiler toute la page vers le haut.
+                            --}}
+                            <button
+                                type="button"
+                                class="mt-3 flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-brand-300 px-3 py-3 text-sm font-medium text-brand-700 transition hover:border-brand-accent hover:bg-brand-accent/5 hover:text-brand-accent focus-visible:ring-2 focus-visible:ring-brand-accent focus-visible:ring-offset-1 focus-visible:outline-none dark:border-white/15 dark:text-brand-200 dark:hover:border-brand-accent dark:focus-visible:ring-offset-brand-dark"
+                                x-on:click="allerAuxIcones()"
+                                x-show="nombre > 0"
+                                x-cloak
+                            >
+                                <i class="fa-solid fa-plus text-xs" aria-hidden="true"></i>
+                                Autre mesure
+                            </button>
                         </div>
 
                         @error('mesures')
@@ -306,22 +347,49 @@
                                     maxlength="1000"
                                 />
                             </div>
+
+                            {{-- Barre d'action : elle suit le dernier champ saisi. --}}
+                            <div class="flex flex-wrap items-center justify-center gap-2 sm:col-span-6">
+                                <p
+                                    class="mr-auto text-xs text-brand-600 dark:text-brand-300"
+                                    x-show="nombre > 0"
+                                    x-cloak
+                                >
+                                    <span class="font-semibold tabular-nums" x-text="nombre"></span>
+                                    <span x-text="nombre > 1 ? 'mesure(s) à enregistrer' : 'mesure à enregistrer'"></span>
+                                </p>
+
+                                <p
+                                    class="mr-auto text-xs text-brand-500 dark:text-brand-400"
+                                    x-show="nombre === 0"
+                                    x-cloak
+                                >
+                                    Aucune mesure sélectionnée. Touchez une icône pour commencer.
+                                </p>
+
+                                 <button
+                                    type="submit"
+                                    class="cf-btn-primary w-full sm:w-auto mb-2 sm:mb-0 cf-btn-sm"
+                                    x-bind:disabled="nombre === 0"
+                                >
+                                    <i class="fa-solid fa-check" aria-hidden="true"></i>
+                                    <span x-text="nombre > 1 ? 'Enregistrer les ' + nombre + ' mesures' : 'Enregistrer la mesure'"></span>
+                                </button>
+                                
+                                <button
+                                    type="button"
+                                    class="cf-btn-secondary w-full sm:w-auto mb-2 sm:mb-0 cf-btn-sm"
+                                    x-on:click="vider()"
+                                    x-show="nombre > 0"
+                                    x-cloak
+                                >
+                                    <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                                    Annuler
+                                </button>
+
+                               
+                            </div>
                         </div>
-                    </div>
-
-                    <div class="flex flex-wrap items-center gap-2 border-t border-brand-200/70 px-5 py-4 dark:border-white/10">
-                        <button
-                            type="submit"
-                            class="cf-btn-primary"
-                            x-bind:disabled="nombre === 0"
-                        >
-                            <i class="fa-solid fa-check" aria-hidden="true"></i>
-                            <span x-text="nombre > 1 ? 'Enregistrer les ' + nombre + ' mesures' : 'Enregistrer la mesure'"></span>
-                        </button>
-
-                        <p class="text-xs text-brand-500 dark:text-brand-400">
-                            Chaque valeur est conservée dans l'historique du client.
-                        </p>
                     </div>
                 </form>
             </section>
@@ -381,54 +449,38 @@
                 @endif
             </form>
 
-            {{-- Tableau avec édition en ligne --}}
-            <section class="cf-card overflow-hidden">
-                <div class="cf-card-header">
-                    <h2 class="font-serif text-lg font-semibold">Relevé des mesures</h2>
+{{-- Relevé des mesures : une carte par jour de prise, façon carnet --}}
+            <section class="space-y-6" aria-labelledby="releves-titre">
+                <div class="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                        <h2 id="releves-titre" class="font-serif text-lg font-semibold">Relevé des mesures</h2>
+                        <p class="text-xs text-brand-500 dark:text-brand-400">
+                            Une carte par jour de prise, du plus récent au plus ancien.
+                        </p>
+                    </div>
+
                     <span class="text-xs text-brand-500 dark:text-brand-400">
-                        <span class="font-semibold tabular-nums">{{ number_format($mesures->total(), 0, ',', ' ') }}</span>
+                        <span class="font-semibold tabular-nums">{{ number_format($mesures->count(), 0, ',', ' ') }}</span>
                         mesure(s)
                     </span>
                 </div>
 
                 @if ($editionOuverte)
-                    <div class="border-b border-red-200 bg-red-50 px-5 py-4 dark:border-red-500/20 dark:bg-red-500/10">
-                        <p class="flex items-center gap-2 text-sm font-semibold text-red-700 dark:text-red-300">
-                            <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
-                            La mesure n'a pas pu être enregistrée
-                        </p>
-                        <ul class="mt-1.5 space-y-1 text-xs text-red-700 dark:text-red-300">
-                            @error('libelle')
-                                <li class="flex items-center gap-1.5">
-                                    <i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i>
-                                    {{ $message }}
-                                </li>
-                            @enderror
-                            @error('valeur')
-                                <li class="flex items-center gap-1.5">
-                                    <i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i>
-                                    {{ $message }}
-                                </li>
-                            @enderror
-                            @error('unite')
-                                <li class="flex items-center gap-1.5">
-                                    <i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i>
-                                    {{ $message }}
-                                </li>
-                            @enderror
-                            @error('date_mesure')
-                                <li class="flex items-center gap-1.5">
-                                    <i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i>
-                                    {{ $message }}
-                                </li>
-                            @enderror
-                            @error('commentaire')
-                                <li class="flex items-center gap-1.5">
-                                    <i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i>
-                                    {{ $message }}
-                                </li>
-                            @enderror
-                        </ul>
+                    <div
+                        class="flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3.5 dark:border-red-500/30 dark:bg-red-500/10"
+                        role="alert"
+                    >
+                        <i class="fa-solid fa-triangle-exclamation mt-0.5 text-sm text-red-700 dark:text-red-300" aria-hidden="true"></i>
+                        <div class="flex-1 text-sm text-red-700 dark:text-red-300">
+                            <p class="font-semibold">La mesure n'a pas pu être enregistrée</p>
+                            <ul class="mt-1.5 space-y-1 text-xs">
+                                @error('libelle') <li>{{ $message }}</li> @enderror
+                                @error('valeur') <li>{{ $message }}</li> @enderror
+                                @error('unite') <li>{{ $message }}</li> @enderror
+                                @error('date_mesure') <li>{{ $message }}</li> @enderror
+                                @error('commentaire') <li>{{ $message }}</li> @enderror
+                            </ul>
+                        </div>
                     </div>
                 @endif
 
@@ -443,228 +495,22 @@
                         :action-label="$filtreActif ? 'Réinitialiser les filtres' : null"
                     />
                 @else
-                    <div class="overflow-x-auto">
-                        <table class="cf-table">
-                            <caption class="sr-only">Mesures enregistrées pour {{ $client->nom }}</caption>
-                            <thead>
-                                <tr>
-                                    <th scope="col">Mesure</th>
-                                    <th scope="col">Catégorie</th>
-                                    <th scope="col">Valeur</th>
-                                    <th scope="col">Date</th>
-                                    <th scope="col">Commentaire</th>
-                                    <th scope="col" class="text-right">Actions</th>
-                                </tr>
-                            </thead>
+                   @foreach ($relevesParDate as $cle => $mesuresDuJour)
+                    @php
+                        [$date, $heure] = str_contains($cle, '|') 
+                            ? explode('|', $cle) 
+                            : [$cle, null];
+                    @endphp
 
-                            @foreach ($mesures as $mesure)
-                                <tbody x-data="{ editing: {{ $mesureEditee?->id === $mesure->id ? 'true' : 'false' }} }">
-                                    <tr>
-                                        <td>
-                                            <div class="flex items-center gap-2.5">
-                                                <span class="flex size-8 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-brand-accent dark:bg-white/5">
-                                                    <i class="fa-solid {{ $mesure->icone() }} text-sm" aria-hidden="true"></i>
-                                                </span>
-
-                                                <span class="font-medium">{{ $mesure->libelle }}</span>
-                                            </div>
-                                        </td>
-
-                                        <td class="text-xs">
-                                            @if (filled($mesure->categorie))
-                                                <span class="cf-badge">{{ $mesure->categorie }}</span>
-                                            @else
-                                                <span class="text-brand-400">—</span>
-                                            @endif
-                                        </td>
-
-                                        <td class="font-semibold whitespace-nowrap tabular-nums">{{ $mesure->valeurFormatee() }}</td>
-
-                                        <td class="whitespace-nowrap tabular-nums">
-                                            {{ $mesure->date_mesure?->format('d/m/Y') ?? '—' }}
-                                        </td>
-
-                                        <td class="max-w-xs text-xs">
-                                            @if (filled($mesure->commentaire))
-                                                <span class="line-clamp-2">{{ $mesure->commentaire }}</span>
-                                            @else
-                                                <span class="text-brand-400">—</span>
-                                            @endif
-                                        </td>
-
-                                        <td>
-                                            <div class="flex items-center justify-end gap-2">
-                                                <button
-                                                    type="button"
-                                                    class="cf-btn-secondary cf-btn-sm"
-                                                    x-on:click="editing = !editing"
-                                                    :aria-expanded="editing.toString()"
-                                                    aria-controls="edition-{{ $mesure->id }}"
-                                                >
-                                                    <i class="fa-solid fa-pen" aria-hidden="true"></i>
-                                                    Modifier
-                                                </button>
-
-                                                <x-delete-form
-                                                    :action="route('mesures.destroy', $mesure)"
-                                                    title="Supprimer la mesure"
-                                                    :message="'La mesure « '.$mesure->libelle.' » sera définitivement supprimée. Continuer ?'"
-                                                    label="Supprimer"
-                                                    class="cf-btn-danger cf-btn-sm"
-                                                />
-                                            </div>
-                                        </td>
-                                    </tr>
-
-                                    <tr id="edition-{{ $mesure->id }}" x-show="editing" x-cloak>
-                                        <td colspan="6" class="bg-brand-50/60 dark:bg-white/5">
-                                            <form
-                                                method="POST"
-                                                action="{{ route('mesures.update', $mesure) }}"
-                                                class="grid gap-3 p-1 sm:grid-cols-6"
-                                            >
-                                                @csrf
-                                                @method('PUT')
-
-                                                <div class="sm:col-span-2">
-                                                    <label for="edition-{{ $mesure->id }}-code" class="cf-label">Mesure</label>
-
-                                                    @php
-                                                        $entreeCourante = Mesure::entreeParCode($mesure->code)
-                                                            ?? Mesure::entreeParLibelle($mesure->libelle);
-                                                    @endphp
-
-                                                    <select
-                                                        id="edition-{{ $mesure->id }}-code"
-                                                        name="code"
-                                                        class="cf-select"
-                                                        aria-invalid="{{ $errors->has('libelle') ? 'true' : 'false' }}"
-                                                    >
-                                                        @unless ($entreeCourante)
-                                                            {{--
-                                                                Mesure enregistrée avant le catalogue, ou dont
-                                                                l'intitulé n'y figure pas : elle reste
-                                                                sélectionnable et reste modifiable en clair.
-                                                            --}}
-                                                            <option
-                                                                value=""
-                                                                @selected(old('code', '') === '')
-                                                            >
-                                                                {{ $mesure->libelle }} (hors catalogue)
-                                                            </option>
-                                                        @endunless
-
-                                                        @foreach ($catalogue as $zone => $entrees)
-                                                            <optgroup label="{{ $zone }}">
-                                                                @foreach ($entrees as $entree)
-                                                                    <option
-                                                                        value="{{ $entree['code'] }}"
-                                                                        @selected(
-                                                                            (string) old('code', $entreeCourante['code'] ?? '') === $entree['code']
-                                                                        )
-                                                                    >
-                                                                        {{ $entree['libelle'] }}
-                                                                    </option>
-                                                                @endforeach
-                                                            </optgroup>
-                                                        @endforeach
-                                                    </select>
-
-                                                    @unless ($entreeCourante)
-                                                        <input
-                                                            type="hidden"
-                                                            name="libelle"
-                                                            value="{{ old('libelle', $mesure->libelle) }}"
-                                                        >
-                                                    @endunless
-                                                </div>
-
-                                                <div>
-                                                    <label for="edition-{{ $mesure->id }}-valeur" class="cf-label">Valeur</label>
-                                                    <input
-                                                        id="edition-{{ $mesure->id }}-valeur"
-                                                        name="valeur"
-                                                        type="number"
-                                                        step="0.1"
-                                                        min="0"
-                                                        max="9999.99"
-                                                        value="{{ old('valeur', $mesure->valeur) }}"
-                                                        required
-                                                        aria-invalid="{{ $errors->has('valeur') ? 'true' : 'false' }}"
-                                                        class="cf-input"
-                                                    >
-                                                </div>
-
-                                                <div>
-                                                    <label for="edition-{{ $mesure->id }}-unite" class="cf-label">Unité</label>
-                                                    <select
-                                                        id="edition-{{ $mesure->id }}-unite"
-                                                        name="unite"
-                                                        class="cf-select"
-                                                    >
-                                                        @foreach ($unites as $valeurUnite => $libelleUnite)
-                                                            <option
-                                                                value="{{ $valeurUnite }}"
-                                                                @selected((string) old('unite', $mesure->unite) === (string) $valeurUnite)
-                                                            >
-                                                                {{ $libelleUnite }}
-                                                            </option>
-                                                        @endforeach
-                                                    </select>
-                                                </div>
-
-                                                <div>
-                                                    <label for="edition-{{ $mesure->id }}-date" class="cf-label">Date</label>
-                                                    <input
-                                                        id="edition-{{ $mesure->id }}-date"
-                                                        name="date_mesure"
-                                                        type="date"
-                                                        min="2000-01-01"
-                                                        max="{{ $aujourdhui }}"
-                                                        value="{{ old('date_mesure', $mesure->date_mesure?->format('Y-m-d')) }}"
-                                                        required
-                                                        aria-invalid="{{ $errors->has('date_mesure') ? 'true' : 'false' }}"
-                                                        class="cf-input"
-                                                    >
-                                                </div>
-
-                                                <div class="sm:col-span-6">
-                                                    <label for="edition-{{ $mesure->id }}-commentaire" class="cf-label">Commentaire</label>
-                                                    <input
-                                                        id="edition-{{ $mesure->id }}-commentaire"
-                                                        name="commentaire"
-                                                        type="text"
-                                                        value="{{ old('commentaire', $mesure->commentaire) }}"
-                                                        maxlength="1000"
-                                                        aria-invalid="{{ $errors->has('commentaire') ? 'true' : 'false' }}"
-                                                        class="cf-input"
-                                                    >
-                                                </div>
-
-                                                <div class="flex flex-wrap items-center justify-center gap-2 sm:col-span-6">
-                                                    <button type="submit" class="cf-btn-primary w-full sm:w-auto mb-2 sm:mb-0 cf-btn-sm">
-                                                        <i class="fa-solid fa-check" aria-hidden="true"></i>
-                                                        Enregistrer
-                                                    </button>
-
-                                                    <button
-                                                        type="button"
-                                                        class="cf-btn-secondary w-full sm:w-auto mb-2 sm:mb-0 cf-btn-sm"
-                                                        x-on:click="editing = false"
-                                                    >
-                                                        <i class="fa-solid fa-xmark" aria-hidden="true"></i>
-                                                        Annuler
-                                                    </button>
-                                                </div>
-                                            </form>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            @endforeach
-                        </table>
-                    </div>
-
-                    <x-pagination :paginator="$mesures" label="mesures" />
+                    <x-mesures-releve
+                        :date="$date"
+                        :heure="$heure"
+                        :mesures="$mesuresDuJour"
+                        :catalogue="$catalogue"
+                        :unites="$unites"
+                        :aujourdhui="$aujourdhui"
+                    />
+                @endforeach
                 @endif
             </section>
 
@@ -733,6 +579,14 @@
         </div>
 
         <aside class="space-y-6 lg:col-span-1">
+            {{--
+                La carte « Enregistrer » qui vivait ici a été retirée : le
+                bouton est désormais dans le formulaire, sous le commentaire.
+                Il est difficile d'avoir à balayer la page pour trouver où l'on
+                valide sa saisie. Cette colonne garde les repères de
+                l'historique et le catalogue des mesures.
+            --}}
+
             {{-- Repères actuels, issus de l'historique complet --}}
             <section class="cf-card overflow-hidden">
                 <div class="cf-card-header">
@@ -820,8 +674,9 @@
                 <div id="catalogue-mesures" x-show="ouvert" x-cloak>
                     <div class="space-y-3 border-t border-brand-200/70 p-5 dark:border-white/10">
                         <p class="text-xs text-brand-600 dark:text-brand-300">
-                            Toutes ces mesures sont facultatives. Touchez une icône de la palette
-                            pour l'ajouter à votre relevé, et encore une fois pour la retirer.
+                            Toutes ces mesures sont facultatives. Touchez une icône, ici ou dans la
+                            palette, pour l'ajouter à votre relevé et aller droit à son champ ; touchez
+                            encore pour la retirer.
                         </p>
 
                         @foreach ($catalogue as $zone => $entrees)
@@ -832,9 +687,24 @@
 
                                 <ul class="mt-1.5 flex flex-wrap gap-1.5">
                                     @foreach ($entrees as $entree)
-                                        <li class="inline-flex items-center gap-1.5 rounded-lg border border-brand-200 px-2 py-1 text-xs text-brand-700 dark:border-white/10 dark:text-brand-200">
-                                            <i class="fa-solid {{ $entree['icone'] }} text-brand-500 dark:text-brand-300" aria-hidden="true"></i>
-                                            {{ $entree['libelle'] }}
+                                        {{-- Même comportement que la palette : basculer() déplace déjà le curseur sur le champ. --}}
+                                        <li>
+                                            <button
+                                                type="button"
+                                                class="inline-flex min-h-8 items-center gap-1.5 rounded-lg border px-2 py-1 text-xs transition focus-visible:ring-2 focus-visible:ring-brand-accent focus-visible:ring-offset-1 focus-visible:outline-none dark:focus-visible:ring-offset-brand-dark"
+                                                x-on:click="basculer(@js($entree['code']))"
+                                                x-bind:aria-pressed="contient(@js($entree['code'])) ? 'true' : 'false'"
+                                                x-bind:class="contient(@js($entree['code']))
+                                                    ? 'border-brand-accent bg-brand-accent/10 font-semibold text-brand-900 dark:text-brand-50'
+                                                    : 'border-brand-200 text-brand-700 hover:border-brand-accent hover:bg-brand-accent/5 dark:border-white/10 dark:text-brand-200'"
+                                            >
+                                                <i
+                                                    class="fa-solid {{ $entree['icone'] }}"
+                                                    :class="contient(@js($entree['code'])) ? 'text-brand-accent' : 'text-brand-500 dark:text-brand-300'"
+                                                    aria-hidden="true"
+                                                ></i>
+                                                {{ $entree['libelle'] }}
+                                            </button>
                                         </li>
                                     @endforeach
                                 </ul>

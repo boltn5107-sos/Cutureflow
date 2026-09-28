@@ -205,11 +205,12 @@ class DemoSeeder extends Seeder
             'Tour de poitrine' => 92,
             'Tour de taille' => 74,
             'Tour de hanches' => 98,
-            'Carrure' => 39,
+            'Tour de cou' => 38,
             'Longueur épaule' => 41,
             'Longueur manche' => 58,
-            'Longueur robe' => 112,
-            'Entrejambe' => 78,
+            'Tour de poignet' => 17,
+            'Fourche devant' => 27,
+            'Fourche dos' => 30,
         ];
 
         foreach ($clients as $index => $client) {

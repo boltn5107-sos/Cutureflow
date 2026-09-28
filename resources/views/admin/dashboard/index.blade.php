@@ -191,7 +191,7 @@
             />
         @else
 <div class="overflow-x-auto">
-                 <table class="cf-table min-w-max">
+                 <table class="cf-table 2xl:min-w-max">
                      <thead>
                          <tr>
                              <th class="whitespace-nowrap">Atelier</th>
@@ -205,10 +205,10 @@
                         @foreach ($abonnementsExpires as $expire)
                             @php $jours = (int) now()->startOfDay()->diffInDays($expire->atelier->valid_until->startOfDay(), false); @endphp
                             <tr>
-                                <td class="font-medium">{{ $expire->atelier?->nom ?? '—' }}</td>
-                                <td>{{ $expire->name }}</td>
-                                <td class="tabular-nums">{{ $expire->atelier?->valid_until?->format('d/m/Y') ?? '—' }}</td>
-                                <td>
+                                <td data-label="Atelier" class="font-medium">{{ $expire->atelier?->nom ?? '—' }}</td>
+                                <td data-label="Responsable">{{ $expire->name }}</td>
+                                <td data-label="Échéance" class="tabular-nums">{{ $expire->atelier?->valid_until?->format('d/m/Y') ?? '—' }}</td>
+                                <td data-label="Jours restants">
                                     @if ($jours < 0)
                                         <span class="cf-badge bg-red-100 text-red-700 dark:bg-red-500/15 dark:text-red-300">
                                             Expiré depuis {{ abs($jours) }} j
@@ -223,7 +223,7 @@
                                         </span>
                                     @endif
                                 </td>
-                                <td class="text-right">
+                                <td data-compact class="text-right">
                                     <a href="{{ route('admin.utilisateurs.show', $expire) }}" class="cf-link text-xs font-semibold">
                                         Voir la fiche
                                     </a>

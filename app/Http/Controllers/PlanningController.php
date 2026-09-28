@@ -101,6 +101,8 @@ class PlanningController extends Controller
 
     public function update(RendezVousRequest $request, RendezVous $rendezVous): RedirectResponse
     {
+        $this->authorize('update', $rendezVous);
+
         $rendezVous->update($request->safe()->all());
 
         return redirect()

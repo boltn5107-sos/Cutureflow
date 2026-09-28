@@ -239,7 +239,12 @@
                     />
                 @else
                     <div class="overflow-x-auto">
-                        <table class="cf-table min-w-max">
+                        {{--
+                            2xl seulement : sous 2xl, .cf-table passe en cartes
+                            empilées (voir resources/css/app.css) et impose un
+                            débordement horizontal que min-w-max aggraverait.
+                        --}}
+                        <table class="cf-table 2xl:min-w-max">
                             <caption class="sr-only">Paiements enregistrés dans la caisse</caption>
                             <thead>
                                 <tr>
@@ -258,15 +263,15 @@
                                     @php $nomClient = $paiement->client?->nom ?? $paiement->commande?->client?->nom; @endphp
 
                                     <tr class="hover:bg-brand-50/40 dark:hover:bg-white/[0.03]">
-                                        <td class="whitespace-nowrap tabular-nums">
+                                        <td data-label="Date" class="whitespace-nowrap tabular-nums">
                                             {{ $paiement->date_paiement?->format('d/m/Y') ?? '—' }}
                                         </td>
-                                        <td class="whitespace-nowrap">
+                                        <td data-label="Type" class="whitespace-nowrap">
                                             <span class="cf-badge {{ $paiement->typeBadgeClass() }}">
                                                 {{ $paiement->typeLabel() }}
                                             </span>
                                         </td>
-                                        <td class="whitespace-nowrap">
+                                        <td data-label="Commande" class="whitespace-nowrap">
                                             @if ($paiement->commande)
                                                 <a href="{{ route('commandes.show', $paiement->commande) }}" class="cf-link font-semibold">
                                                     {{ $paiement->commande->numero }}
@@ -275,7 +280,7 @@
                                                 <span class="text-brand-400">—</span>
                                             @endif
                                         </td>
-                                        <td class="whitespace-nowrap">
+                                        <td data-label="Client" class="whitespace-nowrap">
                                             @if ($paiement->client)
                                                 <a href="{{ route('clients.show', $paiement->client) }}" class="hover:underline">
                                                     {{ $paiement->client->nom }}
@@ -286,22 +291,22 @@
                                                 <span class="text-brand-400">—</span>
                                             @endif
                                         </td>
-                                        <td class="whitespace-nowrap">
+                                        <td data-label="Méthode" class="whitespace-nowrap">
                                             <span class="flex items-center gap-1.5">
                                                 <i class="{{ $paiement->methodeIcon() }} w-4 text-center text-brand-400" aria-hidden="true"></i>
                                                 {{ $paiement->methodeLabel() }}
                                             </span>
                                         </td>
-                                        <td class="text-right font-semibold tabular-nums whitespace-nowrap">
+                                        <td data-label="Montant" class="text-right font-semibold tabular-nums whitespace-nowrap">
                                             {{ number_format((float) $paiement->montant, 0, ',', ' ') }} {{ $devise }}
                                         </td>
-                                        <td class="max-w-xs text-xs">
+                                        <td data-label="Description" class="max-w-xs text-xs">
                                             @if ($paiement->reference)
                                                 <span class="block font-medium">{{ $paiement->reference }}</span>
                                             @endif
                                             <span class="line-clamp-2">{{ $paiement->description ?: '—' }}</span>
                                         </td>
-                                        <td class="text-right whitespace-nowrap">
+                                        <td data-compact class="text-right whitespace-nowrap">
                                             <a
                                                 href="{{ route('caisse.paiements.show', $paiement) }}"
                                                 class="cf-btn-secondary cf-btn-sm"
