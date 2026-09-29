@@ -83,11 +83,20 @@ Alpine.store('notifications', {
     nonLues: 0,
     sonActif: true,
     sonPret: false,
-    toasts: [],
+    messages: [],
     minuterie: null,
     contexte: null,
     delai: 30000,
     delaiCache: 180000,
+
+    /*
+     * La notification la plus récente encore en attente d'être vue. Le
+     * popup central ne montre qu'un message à la fois : fermer l'un fait
+     * apparaître le suivant, si la file n'est pas vide.
+     */
+    get actuel() {
+        return this.messages[0] ?? null;
+    },
 
     demarrer() {
         const racine = document.querySelector('[data-notifications]');
@@ -171,18 +180,22 @@ Alpine.store('notifications', {
 
     annoncer(dernier) {
         this.jouer();
-        this.toasts.push({ ...dernier, cle: Date.now() });
+        this.messages.push({ ...dernier, cle: Date.now() });
 
-        // Au-delà de trois, l'écran est saturé et la pile ne sert plus à rien.
-        while (this.toasts.length > 3) {
-            this.toasts.shift();
+        // Au-delà de cinq, la file n'apporterait plus rien à lire : on jette
+        // l'échelon le plus ancien pour garder un popup qui reste lisible.
+        while (this.messages.length > 5) {
+            this.messages.shift();
         }
-
-        setTimeout(() => this.fermer(dernier.id), 12000);
     },
 
-    fermer(id) {
-        this.toasts = this.toasts.filter((toast) => String(toast.id) !== String(id));
+    /*
+     * Un seul clic ferme le message affiché et fait place au suivant. Sans
+     * fermeture automatique : un atelier occupé ne doit pas rater un message
+     * parce qu'il a mis quelques instants à tourner la tête.
+     */
+    fermer() {
+        this.messages.shift();
     },
 
     preparer() {
@@ -251,6 +264,96 @@ Alpine.store('notifications', {
         if (this.sonActif) {
             this.jouer();
         }
+    },
+});
+
+/*
+|--------------------------------------------------------------------------
+| Installation de l'application (PWA)
+|--------------------------------------------------------------------------
+|
+| L'application est installable : manifest, service worker, icônes. Un
+| rappel s'affiche à chaque ouverture tant que l'utilisateur n'a pas mené
+| l'installation à son terme. Sur Chrome / Android / Edge, le navigateur
+| délivre un événement « beforeinstallprompt » que l'on capture pour
+| proposer son propre bouton. Sur iOS Safari, cet événement n'existe pas :
+| le bouton du rappel ouvre alors le mode d'emploi « Ajouter à l'écran
+| d'accueil ».
+|
+| « Plus tard » masque la bannière jusqu'à la prochaine ouverture : la
+| fermeture n'est jamais mémorisée, pour respecter le rappel quotidien.
+| Une fois l'installation menée à bien (mode « standalone » ou événement
+| « appinstalled »), le rappel ne reparaît plus.
+|
+*/
+Alpine.store('installation', {
+    visible: false,
+    etapes: false,
+    prompt: null,
+    estIOS: /iphone|ipad|ipod/i.test(navigator.userAgent)
+        || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1),
+
+    /* L'application est déjà ouverte en tant que PWA installée. */
+    get dejaInstallee() {
+        return window.matchMedia('(display-mode: standalone)').matches;
+    },
+
+    demarrer() {
+        if (this.dejaInstallee) {
+            return;
+        }
+
+        window.addEventListener('beforeinstallprompt', (evenement) => {
+            evenement.preventDefault();
+            this.prompt = evenement;
+            this.visible = true;
+        });
+
+        window.addEventListener('appinstalled', () => {
+            this.prompt = null;
+            this.visible = false;
+            this.etapes = false;
+        });
+
+        /*
+         * iOS ne déclenche jamais « beforeinstallprompt » : le rappel fait
+         * office de mode d'emploi, un court instant après l'ouverture.
+         */
+        if (this.estIOS) {
+            setTimeout(() => {
+                if (!this.dejaInstallee) {
+                    this.visible = true;
+                }
+            }, 1500);
+        }
+    },
+
+    installer() {
+        if (this.prompt) {
+            this.prompt.prompt();
+            this.prompt.userChoice.then((choix) => {
+                if (choix.outcome === 'accepted') {
+                    this.visible = false;
+                    this.etapes = false;
+                } else {
+                    this.visible = false;
+                }
+            });
+
+            return;
+        }
+
+        if (this.estIOS) {
+            this.etapes = true;
+        }
+    },
+
+    fermer() {
+        this.visible = false;
+    },
+
+    fermerEtapes() {
+        this.etapes = false;
     },
 });
 
@@ -541,16 +644,20 @@ Alpine.start();
 
 /*
  * Le sondage des notifications n'a besoin du DOM que pour lire l'adresse du
- * point d'état et l'identifiant de la dernière notification déjà affichée.
- * Vite injecte le script en différé, le document est donc normalement prêt ;
- * ce garde-fou couvre le cas où le navigateur l'exécuterait plus tôt.
+ * point d'état et l'identifiant de la dernière notification déjà affichée,
+ * et le rappel d'installation ne dépend d'aucun élément. Vite injecte le
+ * script en différé, le document est donc normalement prêt ; ce garde-fou
+ * couvre le cas où le navigateur l'exécuterait plus tôt.
  */
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
-        Alpine.store('notifications').demarrer();
-    });
-} else {
+const demarrer = () => {
     Alpine.store('notifications').demarrer();
+    Alpine.store('installation').demarrer();
+};
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', demarrer);
+} else {
+    demarrer();
 }
 
 if ('serviceWorker' in navigator) {

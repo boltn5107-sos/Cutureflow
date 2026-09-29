@@ -44,12 +44,20 @@
         />
     @else
         <div class="space-y-3 p-3 sm:p-4">
-            @foreach ($releves as $date => $mesures)
+            @foreach ($releves as $cle => $mesures)
                 <article class="overflow-hidden rounded-xl border border-brand-100 dark:border-white/10">
                     @php
-                        $libelleDate = $date === Client::DATE_SANS_RELEVE
+                        [$date, $heure] = str_contains($cle, '|')
+                            ? explode('|', $cle, 2)
+                            : [$cle, null];
+
+                        $libelleDate = ($date === Client::DATE_SANS_RELEVE)
                             ? 'Relevé sans date'
                             : 'Relevé du '.Carbon::parse($date)->format('d/m/Y');
+
+                        if ($heure) {
+                            $libelleDate .= ' à '.$heure;
+                        }
                     @endphp
 
                     <div class="flex flex-wrap items-center justify-between gap-2 border-b border-brand-100 bg-brand-50/50 px-4 py-2.5 dark:border-white/10 dark:bg-white/5">

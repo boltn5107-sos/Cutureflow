@@ -148,12 +148,17 @@ class MesuresTest extends TestCase
 
         $releves = $this->client->relevesMesures();
 
+        // Une carte par journée de prise (date + heure), le plus récent en premier.
         $this->assertCount(2, $releves);
-        $this->assertCount(1, $releves->get($moisDernier));
-        $this->assertCount(2, $releves->get($ceMois));
+
+        $cleMoisDernier = $releves->keys()->first(fn (string $cle) => str_starts_with($cle, $moisDernier));
+        $cleCeMois = $releves->keys()->first(fn (string $cle) => str_starts_with($cle, $ceMois));
+
+        $this->assertCount(1, $releves->get($cleMoisDernier));
+        $this->assertCount(2, $releves->get($cleCeMois));
 
         // L'historique se lit du relevé le plus récent au plus ancien.
-        $this->assertSame($ceMois, $releves->keys()->first());
+        $this->assertStringStartsWith($ceMois, $releves->keys()->first());
     }
 
     public function test_une_mesure_retiree_du_catalogue_reste_affichee_avec_son_icone_de_repli(): void

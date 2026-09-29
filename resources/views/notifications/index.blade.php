@@ -28,33 +28,37 @@
         subtitle="Consultez, marquez comme lues ou supprimez vos alertes."
     >
         <x-slot:actions>
-            <a href="{{ route('notifications.read-all') }}" class="cf-btn-secondary">
-                <i class="fa-solid fa-check-double" aria-hidden="true"></i>
-                Tout marquer comme lu
-            </a>
+    <div class="grid grid-cols-2 gap-2 w-full sm:flex sm:flex-wrap sm:justify-end sm:w-auto">
+        <a href="{{ route('notifications.read-all') }}" class="cf-btn-secondary w-full">
+            <i class="fa-solid fa-check-double" aria-hidden="true"></i>
+            <span class="hidden xs:inline">Tout marquer lu</span>
+            <span class="xs:hidden">Marquer lu</span>
+        </a>
 
-            <div x-data class="inline-flex">
-                <form method="POST" action="{{ route('notifications.clear') }}" x-ref="form" class="hidden">
-                    @csrf
-                    @method('DELETE')
-                </form>
+        <div x-data class="w-full">
+            <form method="POST" action="{{ route('notifications.clear') }}" x-ref="form" class="hidden">
+                @csrf
+                @method('DELETE')
+            </form>
 
-                <button
-                    type="button"
-                    class="cf-btn-danger"
-                    @click="$store.confirm.ask({
-                        title: @js('Supprimer toutes les notifications'),
-                        message: @js('Cette action est définitive et vide votre centre de notifications. Continuer ?'),
-                        confirmLabel: @js('Tout supprimer'),
-                        tone: 'danger',
-                        onConfirm: () => $refs.form.submit(),
-                    })"
-                >
-                    <i class="fa-solid fa-trash" aria-hidden="true"></i>
-                    Tout supprimer
-                </button>
-            </div>
-        </x-slot:actions>
+            <button
+                type="button"
+                class="cf-btn-danger w-full"
+                @click="$store.confirm.ask({
+                    title: @js('Supprimer toutes les notifications'),
+                    message: @js('Cette action est définitive et vide votre centre de notifications. Continuer ?'),
+                    confirmLabel: @js('Tout supprimer'),
+                    tone: 'danger',
+                    onConfirm: () => $refs.form.submit(),
+                })"
+            >
+                <i class="fa-solid fa-trash" aria-hidden="true"></i>
+                <span class="hidden xs:inline">Tout supprimer</span>
+                <span class="xs:hidden">Tout supprimer</span>
+            </button>
+        </div>
+    </div>
+</x-slot:actions>
     </x-page-header>
 
     <div class="mb-5 flex flex-wrap items-center gap-2" role="group" aria-label="Filtrer les notifications">

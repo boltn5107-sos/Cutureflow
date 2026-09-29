@@ -1,0 +1,140 @@
+{{--
+    Rappel d'installation de l'application.
+
+    Tant que l'application n'est pas installée, une bannière discrète
+    réapparaît à chaque ouverture. « Plus tard » la masque pour la session
+    en cours ; l'installation menée à bien (événement « appinstalled » ou
+    mode autonome « standalone ») la fait disparaître définitivement.
+
+    Sur iOS Safari le navigateur ne propose aucune installation : le bouton
+    du rappel ouvre les étapes « Ajouter à l'écran d'accueil ».
+--}}
+<div
+    x-cloak
+    x-show="$store.installation.visible"
+    x-transition
+    class="fixed right-4 bottom-4 z-50 w-[min(24rem,calc(100vw-2rem))] overflow-hidden rounded-xl border border-brand-200 bg-white shadow-elevated dark:border-white/10 dark:bg-brand-dark"
+    role="region"
+    aria-label="Installer l'application"
+    data-installation-prompt
+>
+    <div class="flex items-start gap-3 p-4">
+        <span class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-brand-100 text-brand-700 dark:bg-white/10 dark:text-brand-200">
+            <i class="fa-solid fa-mobile-screen" aria-hidden="true"></i>
+        </span>
+
+        <div class="min-w-0 flex-1">
+            <p class="text-sm font-semibold">Installer Couture Flow</p>
+            <p class="mt-0.5 text-xs text-brand-600 dark:text-brand-300">
+                <template x-if="$store.installation.estIOS">
+                    <span>Ajoutez l'application à votre écran d'accueil pour l'ouvrir en plein écran, même hors connexion.</span>
+                </template>
+                <template x-if="! $store.installation.estIOS">
+                    <span>Installez l'application pour l'ouvrir en plein écran, même hors connexion.</span>
+                </template>
+            </p>
+        </div>
+
+        <button
+            type="button"
+            class="flex size-6 shrink-0 items-center justify-center rounded-md text-brand-400 transition hover:bg-brand-100 hover:text-brand-700 dark:hover:bg-white/10 dark:hover:text-brand-100"
+            x-on:click="$store.installation.fermer()"
+            aria-label="Fermer le rappel"
+        >
+            <i class="fa-solid fa-xmark text-xs" aria-hidden="true"></i>
+        </button>
+    </div>
+
+    <div class="flex items-center justify-end gap-2 border-t border-brand-100 px-4 py-3 dark:border-white/10">
+        <button
+            type="button"
+            class="cf-btn-secondary cf-btn-sm"
+            x-on:click="$store.installation.fermer()"
+        >
+            Plus tard
+        </button>
+        <button
+            type="button"
+            class="cf-btn-primary cf-btn-sm"
+            x-on:click="$store.installation.installer()"
+        >
+            <span x-show="! $store.installation.estIOS">Installer</span>
+            <span x-cloak x-show="$store.installation.estIOS">Comment installer</span>
+        </button>
+    </div>
+</div>
+
+@push('modals')
+    {{-- Étapes iOS : « Installer » n'a rien à proposer sans « beforeinstallprompt ». --}}
+    <div
+        x-cloak
+        x-show="$store.installation.etapes"
+        x-transition.opacity
+        class="fixed inset-0 z-50 bg-brand-900/40 backdrop-blur-sm"
+        @click="$store.installation.fermerEtapes()"
+    ></div>
+
+    <div
+        x-cloak
+        x-show="$store.installation.etapes"
+        x-transition
+        class="fixed inset-0 z-50 flex items-center justify-center p-4"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Installer l'application sur iPhone ou iPad"
+        data-installation-etapes
+        @keydown.escape.window="$store.installation.fermerEtapes()"
+    >
+        <div class="w-full max-w-sm overflow-hidden rounded-xl border border-brand-200 bg-white shadow-elevated dark:border-white/10 dark:bg-brand-dark">
+            <div class="px-6 pt-6">
+                <h3 class="font-serif text-lg font-semibold">Installer sur iPhone / iPad</h3>
+                <p class="mt-1.5 text-sm text-brand-600 dark:text-brand-300">
+                    Ajoutez Couture Flow à votre écran d'accueil : l'application s'ouvrira comme une app à part entière.
+                </p>
+            </div>
+
+            <ol class="space-y-4 px-6 py-5">
+                <li class="flex items-center gap-3 text-sm text-brand-700 dark:text-brand-200">
+                    <span class="flex size-6 shrink-0 items-center justify-center rounded-full bg-brand-100 text-xs font-semibold text-brand-700 dark:bg-white/10 dark:text-brand-200">1</span>
+                    <span>
+                        Touchez
+                        <span class="inline-flex items-center gap-1.5 font-medium">
+                            <i class="fa-solid fa-share-nodes text-brand-400" aria-hidden="true"></i>
+                            Partager
+                        </span>
+                        dans Safari.
+                    </span>
+                </li>
+                <li class="flex items-center gap-3 text-sm text-brand-700 dark:text-brand-200">
+                    <span class="flex size-6 shrink-0 items-center justify-center rounded-full bg-brand-100 text-xs font-semibold text-brand-700 dark:bg-white/10 dark:text-brand-200">2</span>
+                    <span>Choisissez
+                        <span class="inline-flex items-center gap-1.5 font-medium">
+                            <i class="fa-solid fa-house-circle-check text-brand-400" aria-hidden="true"></i>
+                            Sur l'écran d'accueil
+                        </span>.
+                    </span>
+                </li>
+                <li class="flex items-center gap-3 text-sm text-brand-700 dark:text-brand-200">
+                    <span class="flex size-6 shrink-0 items-center justify-center rounded-full bg-brand-100 text-xs font-semibold text-brand-700 dark:bg-white/10 dark:text-brand-200">3</span>
+                    <span>Touchez
+                        <span class="inline-flex items-center gap-1.5 font-medium">
+                            <i class="fa-solid fa-plus text-brand-400" aria-hidden="true"></i>
+                            Ajouter
+                        </span>
+                        pour confirmer.
+                    </span>
+                </li>
+            </ol>
+
+            <div class="flex flex-col-reverse gap-2 border-t border-brand-200 bg-brand-50/60 px-6 py-4 sm:flex-row sm:justify-end dark:border-white/10 dark:bg-white/[0.02]">
+                <button
+                    type="button"
+                    class="cf-btn-secondary w-full sm:w-auto"
+                    @click="$store.installation.fermerEtapes()"
+                >
+                    Fermer
+                </button>
+            </div>
+        </div>
+    </div>
+@endpush

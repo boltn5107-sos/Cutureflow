@@ -506,6 +506,7 @@
                         :date="$date"
                         :heure="$heure"
                         :mesures="$mesuresDuJour"
+                        :editable="true"
                         :catalogue="$catalogue"
                         :unites="$unites"
                         :aujourdhui="$aujourdhui"

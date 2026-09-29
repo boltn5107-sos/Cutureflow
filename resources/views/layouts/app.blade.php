@@ -74,7 +74,9 @@
 
     @include('layouts.partials.confirm-modal')
 
-    @include('layouts.partials.notification-toasts')
+    @include('layouts.partials.notification-popup')
+
+    @include('layouts.partials.installation-prompt')
 
     @stack('modals')
     @stack('scripts')
