@@ -4,7 +4,7 @@
     'url' => null,
     'telephone' => null,
     'label' => 'Partager',
-    'icon' => 'fa-solid fa-share-nodes',
+    'icon' => 'fa-solid fa-arrow-up-from-bracket',
     'class' => 'cf-btn-secondary',
 ])
 

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\PushSubscription;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -91,5 +92,44 @@ class NotificationController extends Controller
                 'quand' => $dernier->created_at->diffForHumans(),
             ] : null,
         ]);
+    }
+
+    /**
+     * Enregistre l'abonnement push fourni par le navigateur, pour recevoir
+     * les notifications même application fermée. Une même extrémité rejouée
+     * (recharge, nouvel onglet) remplace simplement l'ancienne ligne.
+     */
+    public function abonnerPush(Request $request): JsonResponse
+    {
+        $valides = $request->validate([
+            'endpoint' => ['required', 'url', 'max:2048'],
+            'keys.p256dh' => ['required', 'string', 'max:255'],
+            'keys.auth' => ['required', 'string', 'max:255'],
+        ]);
+
+        PushSubscription::updateOrCreate(
+            ['endpoint' => $valides['endpoint']],
+            [
+                'user_id' => $request->user()->id,
+                'keys_p256dh' => $valides['keys']['p256dh'],
+                'keys_auth' => $valides['keys']['auth'],
+            ]
+        );
+
+        return response()->json(['ok' => true]);
+    }
+
+    public function desabonnerPush(Request $request): JsonResponse
+    {
+        $valides = $request->validate([
+            'endpoint' => ['required', 'url', 'max:2048'],
+        ]);
+
+        $request->user()
+            ->pushSubscriptions()
+            ->where('endpoint', $valides['endpoint'])
+            ->delete();
+
+        return response()->json(['ok' => true]);
     }
 }

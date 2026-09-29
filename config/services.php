@@ -35,4 +35,23 @@ return [
         ],
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Notifications push (Web Push / VAPID)
+    |--------------------------------------------------------------------------
+    |
+    | Clés VAPID nécessaires pour signer les messages push envoyés aux
+    | services de notification (FCM, Mozilla, Apple…). Générées une fois puis
+    | stockées dans l'environnement ; sans elles, aucun push n'est envoyé.
+    |
+    */
+
+    'webpush' => [
+        'vapid' => [
+            'subject' => env('VAPID_SUBJECT', 'mailto:atelier@couture-flow.app'),
+            'public_key' => env('VAPID_PUBLIC_KEY'),
+            'private_key' => env('VAPID_PRIVATE_KEY'),
+        ],
+    ],
+
 ];

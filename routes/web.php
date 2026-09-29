@@ -81,6 +81,19 @@ Route::middleware('auth')->group(function () {
      * /notifications.
      */
     Route::get('/notifications/etat', [NotificationController::class, 'etat'])->name('notifications.etat');
+
+    /*
+     * Abonnements push (Web Push) : le navigateur y dépose l'extrémité à
+     * laquelle les notifications seront envoyées, même application fermée.
+     * Même motif que l'état : hors « atelier.valide » pour couvrir les
+     * administrateurs.
+     */
+    Route::post('/notifications/push/abonner', [NotificationController::class, 'abonnerPush'])
+        ->middleware('throttle:30,1')
+        ->name('notifications.push.subscribe');
+    Route::delete('/notifications/push/desabonner', [NotificationController::class, 'desabonnerPush'])
+        ->middleware('throttle:30,1')
+        ->name('notifications.push.unsubscribe');
 });
 
 /*

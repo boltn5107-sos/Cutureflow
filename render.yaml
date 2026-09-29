@@ -129,6 +129,16 @@ services:
       - key: REMINDER_DUE_SOON_DAYS
         value: "2"
 
+      # ------------------------------------------------- notifications push
+      # Clés VAPID (Web Push). À générer une fois et à renseigner via le
+      # panneau Render ; sans elles, aucune notification n'est poussée.
+      - key: VAPID_SUBJECT
+        value: "mailto:atelier@couture-flow.app"
+      - key: VAPID_PUBLIC_KEY
+        sync: false
+      - key: VAPID_PRIVATE_KEY
+        sync: false
+
     # Preuves de paiement, photos clients et photos de modèles.
     # Sans ce disque, un redéploiement effacerait toutes les images.
     disk:

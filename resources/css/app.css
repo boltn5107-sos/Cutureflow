@@ -131,7 +131,7 @@
 }
 
 @utility cf-btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition
+    @apply inline-flex items-center justify-center gap-1.5 rounded-lg px-3.5 py-2 text-sm font-medium transition
         focus:ring-2 focus:ring-offset-1 focus:outline-none focus:ring-brand-500/40
         disabled:cursor-not-allowed disabled:opacity-50 dark:focus:ring-offset-brand-dark;
 }
@@ -185,7 +185,7 @@
     }
 
     .cf-btn-sm {
-        @apply px-3 py-1.5 text-xs;
+        @apply px-2.5 py-1 text-xs;
     }
 
     /*
@@ -211,11 +211,11 @@
     }
 
     .cf-table thead th {
-        @apply border-b border-brand-200/70 px-4 py-3 text-xs font-semibold tracking-wide text-brand-700 uppercase dark:border-white/10 dark:text-brand-200;
+        @apply border-b border-brand-200/70 px-3 py-2.5 text-xs font-semibold tracking-wide text-brand-700 uppercase dark:border-white/10 dark:text-brand-200;
     }
 
     .cf-table tbody td {
-        @apply border-b border-brand-100 px-4 py-3 align-middle text-brand-800 dark:border-white/5 dark:text-brand-100;
+        @apply border-b border-brand-100 px-3 py-2.5 align-middle text-brand-800 dark:border-white/5 dark:text-brand-100;
     }
 
     /* Mode carte : appliqué sous 2xl, réactivé en tableau dès 2xl. */
@@ -252,7 +252,7 @@
          * + date) qui doivent rester empilés dans la colonne de droite.
          */
         .cf-table tbody td {
-            @apply grid grid-cols-[minmax(4.5rem,30%)_1fr] items-start gap-x-4 border-b border-brand-100/70 px-3 py-2.5 text-sm last:border-b-0 dark:border-white/5;
+            @apply grid grid-cols-[minmax(4.5rem,30%)_1fr] items-start gap-x-3 border-b border-brand-100/70 px-2.5 py-2 text-sm last:border-b-0 dark:border-white/5;
         }
 
         /*

@@ -99,6 +99,54 @@ self.addEventListener('fetch', (event) => {
     }
 });
 
+/* ------------------------------------------------------ notifications push */
+
+/*
+ * Une notification reçue alors que l'application est fermée (ou simplement
+ * en arrière-plan) devient une notification système du navigateur. Le payload
+ * suit la même forme que la notification « database » : titre, message,
+ * url et icône. Le clic rouvre l'application sur la page concernée.
+ */
+self.addEventListener('push', (event) => {
+    let donnees = {};
+
+    try {
+        donnees = event.data ? event.data.json() : {};
+    } catch (e) {
+        donnees = {};
+    }
+
+    const options = {
+        body: donnees.message || '',
+        icon: donnees.icon || '/images/icons/icon-192.png',
+        badge: '/images/icons/icon-192.png',
+        data: { url: donnees.url || '/' },
+    };
+
+    event.waitUntil(
+        self.registration.showNotification(donnees.title || 'Couture Flow', options)
+    );
+});
+
+self.addEventListener('notificationclick', (event) => {
+    const url = event.notification.data?.url || '/';
+
+    event.notification.close();
+
+    event.waitUntil(
+        self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clients) => {
+            for (const client of clients) {
+                if ('focus' in client) {
+                    client.navigate(url);
+                    return client.focus();
+                }
+            }
+
+            return self.clients.openWindow(url);
+        })
+    );
+});
+
 /* ---------------------------------------------------------------- strategies */
 
 async function networkFirst(request) {

@@ -69,7 +69,7 @@
         auprès d'autres ateliers. Le lien pointe vers la page d'accueil publique.
     --}}
     <div class="mb-6 flex flex-wrap items-center gap-3 rounded-xl border border-brand-200 bg-brand-50 px-4 py-3.5 dark:border-white/10 dark:bg-white/5">
-        <i class="fa-solid fa-star text-brand-500" aria-hidden="true"></i>
+        <i class="fa-solid fa-scissors text-brand-500" aria-hidden="true"></i>
         <div class="min-w-0 flex-1">
             <p class="text-sm font-semibold text-brand-900 dark:text-brand-100">
                 Couture Flow vous a sauvé du temps ?

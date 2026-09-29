@@ -88,6 +88,8 @@ Alpine.store('notifications', {
     contexte: null,
     delai: 30000,
     delaiCache: 180000,
+    urlPush: null,
+    pushAbonne: false,
 
     /*
      * La notification la plus récente encore en attente d'être vue. Le
@@ -110,6 +112,7 @@ Alpine.store('notifications', {
         this.dernierId = racine.dataset.dernierId || null;
         this.nonLues = Number(racine.dataset.nonLues || 0);
         this.sonActif = localStorage.getItem('cf-son') !== 'non';
+        this.urlPush = racine.dataset.notificationsPush || null;
 
         /*
          * Les navigateurs refusent de produire un son tant que l'utilisateur
@@ -121,6 +124,20 @@ Alpine.store('notifications', {
         document.addEventListener('pointerdown', deverrouiller, { once: true });
         document.addEventListener('keydown', deverrouiller, { once: true });
 
+        /*
+         * Le push est proposé dès le premier geste, comme le son : la
+         * permission de notification et l'abonnement au service de push
+         * n'ont de sens que déclenchés par l'utilisateur. Si la permission
+         * est déjà acquise (visite précédente), on souscrit aussitôt sans
+         * rien demander.
+         */
+        const abonnerAuPremierGeste = () => {
+            this.preparer();
+            this.abonnerPush();
+        };
+        document.addEventListener('pointerdown', abonnerAuPremierGeste, { once: true });
+        document.addEventListener('keydown', abonnerAuPremierGeste, { once: true });
+
         document.addEventListener('visibilitychange', () => {
             if (!document.hidden) {
                 this.planifier();
@@ -129,6 +146,7 @@ Alpine.store('notifications', {
         });
 
         this.planifier();
+        this.abonnerPush();
     },
 
     /*
@@ -265,6 +283,91 @@ Alpine.store('notifications', {
             this.jouer();
         }
     },
+
+    /*
+     * Abonnement au push (Web Push) : le navigateur remet une extrémité que
+     * le serveur utilise ensuite pour prévenir même application fermée.
+     *
+     * La souscription n'est tentée que si la permission est déjà accordée
+     * (visite précédente) ; sinon, elle attend le premier geste, déclaré par
+     * l'appelant. Un contexte non sécurisé (http hors localhost) et
+     * l'absence de clé VAPID rendent le push impossible : on se contente
+     * alors de la notification à l'écran.
+     */
+    async abonnerPush() {
+        if (this.pushAbonne || !this.urlPush || !('PushManager' in window) || !('serviceWorker' in navigator) || !window.isSecureContext) {
+            return;
+        }
+
+        if (typeof Notification !== 'undefined' && Notification.permission === 'default') {
+            return;
+        }
+
+        const cleServeur = document.querySelector('meta[name="cf-vapid-public-key"]')?.content;
+        if (!cleServeur) {
+            return;
+        }
+
+        try {
+            const inscription = await navigator.serviceWorker.ready;
+            let abonnement = await inscription.pushManager.getSubscription();
+
+            if (!abonnement) {
+                if (typeof Notification !== 'undefined' && Notification.permission !== 'granted') {
+                    return;
+                }
+
+                abonnement = await inscription.pushManager.subscribe({
+                    userVisibleOnly: true,
+                    applicationServerKey: this.decoderCle(cleServeur),
+                });
+            }
+
+            const reponse = await fetch(this.urlPush, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content ?? '',
+                    Accept: 'application/json',
+                },
+                credentials: 'same-origin',
+                body: JSON.stringify({
+                    endpoint: abonnement.endpoint,
+                    keys: {
+                        p256dh: this.base64Url(new Uint8Array(abonnement.getKey('p256dh'))),
+                        auth: this.base64Url(new Uint8Array(abonnement.getKey('auth'))),
+                    },
+                }),
+            });
+
+            if (reponse.ok) {
+                this.pushAbonne = true;
+            }
+        } catch (e) {
+            // Silencieux : un refus de permission ou une erreur du serveur de
+            // push ne doit jamais gêner la notification à l'écran.
+        }
+    },
+
+    base64Url(binaire) {
+        let chaine = '';
+        binaire.forEach((octet) => {
+            chaine += String.fromCharCode(octet);
+        });
+
+        return btoa(chaine).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    },
+
+    /*
+     * La clé publique VAPID est échangée en base64url ; pushManager.subscribe
+     * attend un Uint8Array.
+     */
+    decoderCle(base64url) {
+        const base64 = base64url.replace(/-/g, '+').replace(/_/g, '/');
+        const binaire = atob(base64);
+
+        return Uint8Array.from(binaire, (c) => c.charCodeAt(0));
+    },
 });
 
 /*
@@ -316,16 +419,18 @@ Alpine.store('installation', {
         });
 
         /*
-         * iOS ne déclenche jamais « beforeinstallprompt » : le rappel fait
-         * office de mode d'emploi, un court instant après l'ouverture.
+         * Repli sur tout navigateur, et pas seulement iOS : même sur
+         * Chrome / Edge l'événement « beforeinstallprompt » peut rester muet
+         * (connexion HTTP, critères d'installabilité non atteints, navigateur
+         * conservateur). Tant que rien n'est proposé, le rappel prend le relais
+         * comme mode d'emploi, et « Installer » ouvre les étapes au lieu de ne
+         * rien faire.
          */
-        if (this.estIOS) {
-            setTimeout(() => {
-                if (!this.dejaInstallee) {
-                    this.visible = true;
-                }
-            }, 1500);
-        }
+        setTimeout(() => {
+            if (!this.dejaInstallee && !this.prompt) {
+                this.visible = true;
+            }
+        }, 2500);
     },
 
     installer() {
@@ -343,9 +448,8 @@ Alpine.store('installation', {
             return;
         }
 
-        if (this.estIOS) {
-            this.etapes = true;
-        }
+        // Aucun événement (iOS, HTTP, navigateur conservateur) : mode d'emploi.
+        this.etapes = true;
     },
 
     fermer() {

@@ -11,8 +11,8 @@ use Tests\TestCase;
 /**
  * Le rappel d'installation de l'application (PWA) doit revenir à chaque
  * ouverture tant que l'installation n'est pas menée à bien, et les messages
- * de notification doivent s'ouvrir dans un popup central plutôt que dans
- * des bannières fugaces en coin.
+ * de notification doivent s'ouvrir dans un toast en haut à droite plutôt que
+ * dans des bannières fugaces en coin.
  */
 class PwaRappelTest extends TestCase
 {
@@ -65,15 +65,22 @@ class PwaRappelTest extends TestCase
             ->assertSee('Sur l\'écran d\'accueil', false);
     }
 
-    public function test_les_messages_de_notification_s_ouvrent_dans_un_popup_central(): void
+    public function test_les_messages_de_notification_s_ouvrent_dans_un_toast_en_haut_a_droite(): void
     {
-        $this->actingAs($this->atelier);
-
-        $this->get('/tableau-de-bord')
+        $html = (string) $this->actingAs($this->atelier)
+            ->get('/tableau-de-bord')
             ->assertOk()
-            ->assertSee('data-notifications-popup', false)
-            ->assertSee('$store.notifications.messages', false)
-            // Les anciennes bannières fugaces en coin ont disparu.
-            ->assertDontSee('pointer-events-none fixed top-20 right-4');
+            ->getContent();
+
+        $this->assertStringContainsString('data-notifications-popup', $html);
+        $this->assertStringContainsString('$store.notifications.messages', $html);
+
+        // Le toast glisse depuis la droite, sous l'en-tête.
+        $this->assertStringContainsString('fixed top-20 right-4', $html);
+
+        // Les anciens popups centraux en pleine page ont disparu : le conteneur
+        // du toast n'a plus rien d'un calque plein écran centré.
+        $this->assertDoesNotMatchRegularExpression('/inset-0.{0,80}data-notifications-popup/', $html);
+        $this->assertDoesNotMatchRegularExpression('/data-notifications-popup.{0,80}inset-0/', $html);
     }
 }

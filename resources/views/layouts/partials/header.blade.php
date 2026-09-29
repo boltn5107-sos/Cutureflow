@@ -4,6 +4,7 @@
     data-notifications="{{ route('notifications.etat') }}"
     data-dernier-id="{{ $dernierNotificationId }}"
     data-non-lues="{{ $unreadCount }}"
+    data-notifications-push="{{ route('notifications.push.subscribe') }}"
     @keydown.escape.window="$store.sidebar.open = false; menu = false; profil = false; notifs = false"
 >
     <a href="{{ route('dashboard') }}" class="flex items-center gap-2.5 lg:hidden">

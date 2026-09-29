@@ -58,8 +58,8 @@
             class="cf-btn-primary cf-btn-sm"
             x-on:click="$store.installation.installer()"
         >
-            <span x-show="! $store.installation.estIOS">Installer</span>
-            <span x-cloak x-show="$store.installation.estIOS">Comment installer</span>
+            <span x-show="$store.installation.prompt">Installer</span>
+            <span x-cloak x-show="! $store.installation.prompt">Comment installer</span>
         </button>
     </div>
 </div>
@@ -87,43 +87,81 @@
     >
         <div class="w-full max-w-sm overflow-hidden rounded-xl border border-brand-200 bg-white shadow-elevated dark:border-white/10 dark:bg-brand-dark">
             <div class="px-6 pt-6">
-                <h3 class="font-serif text-lg font-semibold">Installer sur iPhone / iPad</h3>
+                <h3 class="font-serif text-lg font-semibold">Installer Couture Flow</h3>
                 <p class="mt-1.5 text-sm text-brand-600 dark:text-brand-300">
-                    Ajoutez Couture Flow à votre écran d'accueil : l'application s'ouvrira comme une app à part entière.
+                    Ajoutez l'application à votre écran d'accueil : elle s'ouvrira comme une app à part entière.
                 </p>
             </div>
 
             <ol class="space-y-4 px-6 py-5">
-                <li class="flex items-center gap-3 text-sm text-brand-700 dark:text-brand-200">
-                    <span class="flex size-6 shrink-0 items-center justify-center rounded-full bg-brand-100 text-xs font-semibold text-brand-700 dark:bg-white/10 dark:text-brand-200">1</span>
-                    <span>
-                        Touchez
-                        <span class="inline-flex items-center gap-1.5 font-medium">
-                            <i class="fa-solid fa-share-nodes text-brand-400" aria-hidden="true"></i>
-                            Partager
-                        </span>
-                        dans Safari.
-                    </span>
-                </li>
-                <li class="flex items-center gap-3 text-sm text-brand-700 dark:text-brand-200">
-                    <span class="flex size-6 shrink-0 items-center justify-center rounded-full bg-brand-100 text-xs font-semibold text-brand-700 dark:bg-white/10 dark:text-brand-200">2</span>
-                    <span>Choisissez
-                        <span class="inline-flex items-center gap-1.5 font-medium">
-                            <i class="fa-solid fa-house-circle-check text-brand-400" aria-hidden="true"></i>
-                            Sur l'écran d'accueil
-                        </span>.
-                    </span>
-                </li>
-                <li class="flex items-center gap-3 text-sm text-brand-700 dark:text-brand-200">
-                    <span class="flex size-6 shrink-0 items-center justify-center rounded-full bg-brand-100 text-xs font-semibold text-brand-700 dark:bg-white/10 dark:text-brand-200">3</span>
-                    <span>Touchez
-                        <span class="inline-flex items-center gap-1.5 font-medium">
-                            <i class="fa-solid fa-plus text-brand-400" aria-hidden="true"></i>
-                            Ajouter
-                        </span>
-                        pour confirmer.
-                    </span>
-                </li>
+                <template x-if="$store.installation.estIOS">
+                    <div class="space-y-4">
+                        <li class="flex items-center gap-3 text-sm text-brand-700 dark:text-brand-200">
+                            <span class="flex size-6 shrink-0 items-center justify-center rounded-full bg-brand-100 text-xs font-semibold text-brand-700 dark:bg-white/10 dark:text-brand-200">1</span>
+                            <span>
+                                Touchez
+                                <span class="inline-flex items-center gap-1.5 font-medium">
+                                    <i class="fa-solid fa-share-nodes text-brand-400" aria-hidden="true"></i>
+                                    Partager
+                                </span>
+                                dans Safari.
+                            </span>
+                        </li>
+                        <li class="flex items-center gap-3 text-sm text-brand-700 dark:text-brand-200">
+                            <span class="flex size-6 shrink-0 items-center justify-center rounded-full bg-brand-100 text-xs font-semibold text-brand-700 dark:bg-white/10 dark:text-brand-200">2</span>
+                            <span>Choisissez
+                                <span class="inline-flex items-center gap-1.5 font-medium">
+                                    <i class="fa-solid fa-house-circle-check text-brand-400" aria-hidden="true"></i>
+                                    Sur l'écran d'accueil
+                                </span>.
+                            </span>
+                        </li>
+                        <li class="flex items-center gap-3 text-sm text-brand-700 dark:text-brand-200">
+                            <span class="flex size-6 shrink-0 items-center justify-center rounded-full bg-brand-100 text-xs font-semibold text-brand-700 dark:bg-white/10 dark:text-brand-200">3</span>
+                            <span>Touchez
+                                <span class="inline-flex items-center gap-1.5 font-medium">
+                                    <i class="fa-solid fa-plus text-brand-400" aria-hidden="true"></i>
+                                    Ajouter
+                                </span>
+                                pour confirmer.
+                            </span>
+                        </li>
+                    </div>
+                </template>
+
+                <template x-if="! $store.installation.estIOS">
+                    <div class="space-y-4">
+                        <li class="flex items-center gap-3 text-sm text-brand-700 dark:text-brand-200">
+                            <span class="flex size-6 shrink-0 items-center justify-center rounded-full bg-brand-100 text-xs font-semibold text-brand-700 dark:bg-white/10 dark:text-brand-200">1</span>
+                            <span>
+                                Ouvrez le menu
+                                <span class="inline-flex items-center gap-1.5 font-medium">
+                                    <i class="fa-solid fa-ellipsis-vertical text-brand-400" aria-hidden="true"></i>
+                                    du navigateur
+                                </span>.
+                            </span>
+                        </li>
+                        <li class="flex items-center gap-3 text-sm text-brand-700 dark:text-brand-200">
+                            <span class="flex size-6 shrink-0 items-center justify-center rounded-full bg-brand-100 text-xs font-semibold text-brand-700 dark:bg-white/10 dark:text-brand-200">2</span>
+                            <span>Choisissez
+                                <span class="inline-flex items-center gap-1.5 font-medium">
+                                    <i class="fa-solid fa-mobile-screen-button text-brand-400" aria-hidden="true"></i>
+                                    Installer l'application
+                                </span>
+                                ou « Ajouter à l'écran d'accueil ».
+                            </span>
+                        </li>
+                        <li class="flex items-center gap-3 text-sm text-brand-700 dark:text-brand-200">
+                            <span class="flex size-6 shrink-0 items-center justify-center rounded-full bg-brand-100 text-xs font-semibold text-brand-700 dark:bg-white/10 dark:text-brand-200">3</span>
+                            <span>Confirmez avec
+                                <span class="inline-flex items-center gap-1.5 font-medium">
+                                    <i class="fa-solid fa-plus text-brand-400" aria-hidden="true"></i>
+                                    Installer
+                                </span>.
+                            </span>
+                        </li>
+                    </div>
+                </template>
             </ol>
 
             <div class="flex flex-col-reverse gap-2 border-t border-brand-200 bg-brand-50/60 px-6 py-4 sm:flex-row sm:justify-end dark:border-white/10 dark:bg-white/[0.02]">
