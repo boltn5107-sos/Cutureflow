@@ -99,6 +99,16 @@
         display: none !important;
     }
 
+    /*
+     * Bannière d'installation : visible par défaut dès le rendu du HTML, sans
+     * dépendre d'aucun script. La classe « cf-installe » sur <html> la masque
+     * quand l'application tourne réellement en mode autonome (standalone),
+     * ou après écarte/installation refusée pour la session en cours.
+     */
+    html.cf-installe [data-installation-prompt] {
+        display: none !important;
+    }
+
     /* Masque les flèches natives des inputs number pour un rendu sobre */
     input[type='number']::-webkit-outer-spin-button,
     input[type='number']::-webkit-inner-spin-button {

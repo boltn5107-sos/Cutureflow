@@ -24,12 +24,26 @@
                     document.documentElement.classList.add('dark');
                 }
             } catch (e) {}
+
+            // Mêmes règles que le layout application : la bannière
+            // d'installation reste visible sur chaque page tant que rien ne
+            // l'a masquée pour la session en cours (mode autonome ou écarte
+            // explicite).
+            try {
+                if (window.matchMedia('(display-mode: standalone)').matches
+                    || sessionStorage.getItem('cf-install-propose') === '1') {
+                    document.documentElement.classList.add('cf-installe');
+                }
+            } catch (e) {}
         })();
     </script>
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="min-h-screen bg-brand-50 font-sans text-brand-900 antialiased dark:bg-brand-dark dark:text-brand-50">
+<body
+    x-data
+    class="min-h-screen bg-brand-50 font-sans text-brand-900 antialiased dark:bg-brand-dark dark:text-brand-50"
+>
     <header class="sticky top-0 z-30 border-b border-brand-200/70 bg-white/85 backdrop-blur-md dark:border-white/10 dark:bg-brand-dark/85">
         <div class="mx-auto flex h-16 max-w-6xl items-center gap-4 px-4 sm:px-6">
             <a href="{{ route('accueil') }}" class="flex items-center gap-2.5">
@@ -190,5 +204,8 @@
     <footer class="px-4 py-8 text-center text-xs text-brand-500 dark:text-brand-400">
         © {{ now()->year }} {{ config('app.name') }} — Gestion d'atelier de couture
     </footer>
+
+    @include('layouts.partials.installation-prompt')
+    @stack('modals')
 </body>
 </html>

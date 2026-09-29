@@ -25,6 +25,20 @@
                 if (stored === 'dark' || (!stored && prefersDark)) {
                     document.documentElement.classList.add('dark');
                 }
+
+                // La bannière d'installation reste visible sur chaque page de
+                // l'onglet, tant que rien ne l'a masquée pour la session en
+                // cours : seul le mode autonome (« standalone », réellement
+                // installé) ou un écarte explicite (« Plus tard », refus)
+                // posent « cf-installe ». Cette classe est réappliquée ici
+                // dès le rendu, avant tout flash de la bannière au retour
+                // d'une navigation.
+                try {
+                    if (window.matchMedia('(display-mode: standalone)').matches
+                        || sessionStorage.getItem('cf-install-propose') === '1') {
+                        document.documentElement.classList.add('cf-installe');
+                    }
+                } catch (e) {}
             } catch (e) {}
         })();
     </script>
@@ -32,7 +46,10 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @stack('head')
 </head>
-<body class="min-h-screen bg-brand-50 font-sans text-brand-900 antialiased dark:bg-brand-dark dark:text-brand-50">
+<body
+    x-data
+    class="min-h-screen bg-brand-50 font-sans text-brand-900 antialiased dark:bg-brand-dark dark:text-brand-50"
+>
     <script>
         document.addEventListener('alpine:init', () => {
             Alpine.store('sidebar', { open: false });

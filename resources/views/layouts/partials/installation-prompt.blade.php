@@ -1,19 +1,23 @@
 {{--
     Rappel d'installation de l'application.
 
-    Tant que l'application n'est pas installée, une bannière discrète
-    réapparaît à chaque ouverture. « Plus tard » la masque pour la session
-    en cours ; l'installation menée à bien (événement « appinstalled » ou
-    mode autonome « standalone ») la fait disparaître définitivement.
+    La bannière est visible PAR DÉFAUT, dès le rendu du HTML. Elle ne dépend
+    d'aucun script pour apparaître : en local comme en ligne, après une
+    installation puis une désinstallation, elle revient à chaque ouverture.
+
+    Seule la CSS peut la masquer, via la classe « cf-installe » posée sur
+    <html> dans deux cas :
+      - l'application tourne en mode autonome « standalone » (réellement
+        installée) — le script du <head> la pose avant tout rendu ;
+      - l'utilisateur l'a écartée (« Plus tard », installation refusée ou
+        menée à bien) — le store la pose pour la session en cours, et le
+        script du <head> la rejoue à chaque page tant que l'onglet vit.
 
     Sur iOS Safari le navigateur ne propose aucune installation : le bouton
     du rappel ouvre les étapes « Ajouter à l'écran d'accueil ».
 --}}
 <div
-    x-cloak
-    x-show="$store.installation.visible"
-    x-transition
-    class="fixed right-4 bottom-4 z-50 w-[min(24rem,calc(100vw-2rem))] overflow-hidden rounded-xl border border-brand-200 bg-white shadow-elevated dark:border-white/10 dark:bg-brand-dark"
+    class="installation-prompt fixed right-4 bottom-4 z-50 w-[min(24rem,calc(100vw-2rem))] overflow-hidden rounded-xl border border-brand-200 bg-white shadow-elevated dark:border-white/10 dark:bg-brand-dark"
     role="region"
     aria-label="Installer l'application"
     data-installation-prompt

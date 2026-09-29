@@ -43,7 +43,7 @@
 
 <aside
     x-data="{}"
-    class="fixed inset-y-0 left-0 z-40 w-72 shrink-0 border-r border-brand-200/70 bg-white transition-transform duration-300 dark:border-white/10 dark:bg-brand-dark"
+    class="fixed inset-y-0 left-0 z-50 w-72 shrink-0 border-r border-brand-200/70 bg-white transition-transform duration-300 dark:border-white/10 dark:bg-brand-dark"
     :class="$store.sidebar.open ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'"
     aria-label="Navigation principale"
 >

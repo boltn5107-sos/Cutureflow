@@ -24,6 +24,7 @@
     role="alert"
     aria-label="Notification"
     data-notifications-popup
+    data-notifications-lire="{{ route('notifications.read', '__ID__') }}"
     @keydown.escape.window="$store.notifications.fermer()"
 >
     <template x-if="$store.notifications.actuel">
@@ -61,7 +62,7 @@
                     Plus tard
                 </button>
                 <a
-                    x-bind:href="$store.notifications.actuel.url"
+                    x-bind:href="$store.notifications.lienVoir"
                     class="cf-btn-primary cf-btn-sm"
                     x-on:click="$store.notifications.fermer()"
                 >

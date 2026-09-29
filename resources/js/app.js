@@ -2,6 +2,69 @@ import Alpine from 'alpinejs';
 
 window.Alpine = Alpine;
 
+/*
+ * La persistance du navigateur peut être indisponible ou refusée (navigation
+ * privée, cookies bloqués) : chaque lecture/écriture y est confinée, pour
+ * qu'un échec n'interrompe jamais le démarrage d'un store — et donc la
+ * bannière d'installation qui est lancée juste après.
+ *
+ * Un revers au stockage de navigation privée est enregistré dans
+ * sessionStorage, puis en mémoire : une empreinte n'est jamais perdue dans
+ * la même session, sinon un message « vu » serait réannoncé à chaque
+ * rechargement (la boucle que l'on a connue).
+ */
+const reserve = {
+    _memoire: new Map(),
+
+    _brut(cle) {
+        try {
+            const valeur = localStorage.getItem(cle);
+
+            if (valeur !== null) {
+                return valeur;
+            }
+        } catch (e) {}
+
+        try {
+            const valeur = sessionStorage.getItem(cle);
+
+            if (valeur !== null) {
+                return valeur;
+            }
+        } catch (e) {}
+
+        return null;
+    },
+
+    lire(cle) {
+        const valeur = this._brut(cle);
+
+        if (valeur !== null) {
+            this._memoire.set(cle, valeur);
+        }
+
+        return this._memoire.get(cle) ?? null;
+    },
+
+    ecrire(cle, valeur) {
+        this._memoire.set(cle, valeur);
+
+        try {
+            localStorage.setItem(cle, valeur);
+
+            return;
+        } catch (e) {
+            // Navigation privée ou stockage refusé : la session reprend.
+        }
+
+        try {
+            sessionStorage.setItem(cle, valeur);
+        } catch (e) {
+            // Silencieux : la mémoire du store suffit pour la page courante.
+        }
+    },
+};
+
 Alpine.store('confirm', {
     open: false,
     title: 'Confirmer',
@@ -43,14 +106,14 @@ Alpine.data('themeToggle', () => ({
      * le premier rendu d'Alpine.
      */
     init() {
-        const stored = localStorage.getItem('cf-theme');
+        const stored = reserve.lire('cf-theme');
         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
 
         this.apply(stored ?? (prefersDark ? 'dark' : 'light'));
     },
     toggle() {
         const next = document.documentElement.classList.contains('dark') ? 'light' : 'dark';
-        localStorage.setItem('cf-theme', next);
+        reserve.ecrire('cf-theme', next);
         this.apply(next);
     },
     apply(theme) {
@@ -90,6 +153,7 @@ Alpine.store('notifications', {
     delaiCache: 180000,
     urlPush: null,
     pushAbonne: false,
+    lireTemplate: null,
 
     /*
      * La notification la plus récente encore en attente d'être vue. Le
@@ -98,6 +162,21 @@ Alpine.store('notifications', {
      */
     get actuel() {
         return this.messages[0] ?? null;
+    },
+
+    /*
+     * « Voir » passe par la route de lecture (notifications.read) : elle
+     * marque le message comme lu puis redirige vers sa cible. Sans cela le
+     * bouton ne ferait que fermer le toast, et le message resterait non lu.
+     */
+    get lienVoir() {
+        const actuel = this.actuel;
+
+        if (!actuel || !this.lireTemplate) {
+            return actuel?.url ?? '#';
+        }
+
+        return this.lireTemplate.replace('__ID__', encodeURIComponent(actuel.id));
     },
 
     demarrer() {
@@ -109,10 +188,27 @@ Alpine.store('notifications', {
         }
 
         this.url = racine.dataset.notifications;
-        this.dernierId = racine.dataset.dernierId || null;
         this.nonLues = Number(racine.dataset.nonLues || 0);
-        this.sonActif = localStorage.getItem('cf-son') !== 'non';
+        this.sonActif = reserve.lire('cf-son') !== 'non';
         this.urlPush = racine.dataset.notificationsPush || null;
+
+        const popup = document.querySelector('[data-notifications-lire]');
+        this.lireTemplate = popup?.dataset.notificationsLire ?? null;
+
+        /*
+         * Empreinte du dernier message déjà écarté, mémorisée dans le
+         * navigateur. Sans elle, une notification créée par une action qui
+         * recharge la page (commande prête, paiement…) serait signalée par
+         * « data-dernier-id » et ne s'afficherait donc jamais : le message
+         * doit précisément apparaître après un rechargement.
+         *
+         * Les identifiants de notification étant des UUID, ils se comparent
+         * tels quels : pas de « min » numérique (qui produirait NaN et
+         * ré-annoncerait un message déjà vu à chaque page). Première visite,
+         * l'empreinte est vide et le dernier message en attente apparaît.
+         */
+        const stocke = reserve.lire('cf-notif-vu');
+        this.dernierId = stocke || null;
 
         /*
          * Les navigateurs refusent de produire un son tant que l'utilisateur
@@ -146,6 +242,9 @@ Alpine.store('notifications', {
         });
 
         this.planifier();
+        // Premier constat immédiat : sans lui, il faudrait attendre un cycle
+        // entier de sondage pour voir le message déjà en attente.
+        this.verifier();
         this.abonnerPush();
     },
 
@@ -187,8 +286,8 @@ Alpine.store('notifications', {
                 return;
             }
 
-            if (dernier.id !== this.dernierId) {
-                this.dernierId = dernier.id;
+            if (String(dernier.id) !== this.dernierId) {
+                this.dernierId = String(dernier.id);
                 this.annoncer(dernier);
             }
         } catch (e) {
@@ -199,6 +298,14 @@ Alpine.store('notifications', {
     annoncer(dernier) {
         this.jouer();
         this.messages.push({ ...dernier, cle: Date.now() });
+
+        /*
+         * Dès qu'un message est affiché, son empreinte est enregistrée :
+         * il ne doit pas réapparaître à la navigation suivante (ni après
+         * « Voir », qui rechargement la page). Le navigateur ne le rejouera
+         * plus tant qu'un plus récent n'arrive.
+         */
+        reserve.ecrire('cf-notif-vu', String(dernier.id));
 
         // Au-delà de cinq, la file n'apporterait plus rien à lire : on jette
         // l'échelon le plus ancien pour garder un popup qui reste lisible.
@@ -211,9 +318,20 @@ Alpine.store('notifications', {
      * Un seul clic ferme le message affiché et fait place au suivant. Sans
      * fermeture automatique : un atelier occupé ne doit pas rater un message
      * parce qu'il a mis quelques instants à tourner la tête.
+     *
+     * Fermer un message enregistre son empreinte : le navigateur ne le
+     * rejouera pas à la prochaine ouverture, tant qu'aucun plus récent
+     * n'arrive. « Plus tard » et « Voir » passent par ici.
      */
     fermer() {
         this.messages.shift();
+
+        // Un message fermé est vu : l'empreinte du dernier affiché est déjà
+        // enregistrée à l'annonce, cette écriture assure surtout de ne jamais
+        // la faire régresser (la file peut contenir plusieurs messages).
+        if (this.dernierId) {
+            reserve.ecrire('cf-notif-vu', String(this.dernierId));
+        }
     },
 
     preparer() {
@@ -277,7 +395,7 @@ Alpine.store('notifications', {
      */
     basculerSon() {
         this.sonActif = !this.sonActif;
-        localStorage.setItem('cf-son', this.sonActif ? 'oui' : 'non');
+        reserve.ecrire('cf-son', this.sonActif ? 'oui' : 'non');
 
         if (this.sonActif) {
             this.jouer();
@@ -371,26 +489,24 @@ Alpine.store('notifications', {
 });
 
 /*
-|--------------------------------------------------------------------------
-| Installation de l'application (PWA)
-|--------------------------------------------------------------------------
-|
-| L'application est installable : manifest, service worker, icônes. Un
-| rappel s'affiche à chaque ouverture tant que l'utilisateur n'a pas mené
-| l'installation à son terme. Sur Chrome / Android / Edge, le navigateur
-| délivre un événement « beforeinstallprompt » que l'on capture pour
-| proposer son propre bouton. Sur iOS Safari, cet événement n'existe pas :
-| le bouton du rappel ouvre alors le mode d'emploi « Ajouter à l'écran
-| d'accueil ».
-|
-| « Plus tard » masque la bannière jusqu'à la prochaine ouverture : la
-| fermeture n'est jamais mémorisée, pour respecter le rappel quotidien.
-| Une fois l'installation menée à bien (mode « standalone » ou événement
-| « appinstalled »), le rappel ne reparaît plus.
-|
-*/
+ |--------------------------------------------------------------------------
+ | Installation de l'application (PWA)
+ |--------------------------------------------------------------------------
+ |
+ | La bannière est visible d'emblée, portée par le HTML : le script n'a
+ | jamais à l'afficher. Il réagit seulement aux événements :
+ |  — « beforeinstallprompt » (Chrome / Edge / Android) pour que le bouton
+ |    « Installer » propose l'outil natif du navigateur ;
+ |  — « appinstalled » ou mode autonome « standalone » pour la masquer ;
+ |  — « Plus tard » / installation refusée pour la masquer le temps de la
+ |    session (la classe disparaît à la prochaine ouverture, la bannière
+ |    revient donc, même en local, même après une désinstallation).
+ |
+ | Si aucun événement n'arrive (iOS Safari, HTTP, navigateur conservateur),
+ | le bouton devient « Comment installer » et ouvre le mode d'emploi.
+ |
+ */
 Alpine.store('installation', {
-    visible: false,
     etapes: false,
     prompt: null,
     estIOS: /iphone|ipad|ipod/i.test(navigator.userAgent)
@@ -402,47 +518,42 @@ Alpine.store('installation', {
     },
 
     demarrer() {
-        if (this.dejaInstallee) {
-            return;
-        }
-
         window.addEventListener('beforeinstallprompt', (evenement) => {
             evenement.preventDefault();
             this.prompt = evenement;
-            this.visible = true;
         });
 
         window.addEventListener('appinstalled', () => {
             this.prompt = null;
-            this.visible = false;
             this.etapes = false;
+            this.masquer();
         });
 
+        if (this.dejaInstallee) {
+            this.masquer();
+        }
+    },
+
+    /* Masque la bannière pour la session en cours (elle revient à la prochaine ouverture). */
+    masquer() {
+        document.documentElement.classList.add('cf-installe');
+
         /*
-         * Repli sur tout navigateur, et pas seulement iOS : même sur
-         * Chrome / Edge l'événement « beforeinstallprompt » peut rester muet
-         * (connexion HTTP, critères d'installabilité non atteints, navigateur
-         * conservateur). Tant que rien n'est proposé, le rappel prend le relais
-         * comme mode d'emploi, et « Installer » ouvre les étapes au lieu de ne
-         * rien faire.
+         * La classe ne tient que sur la page courante : posée par le script
+         * du <head> à chaque rendu, « cf-installe » doit être rejouée à la
+         * navigation suivante, faute de quoi la bannière reviendrait alors
+         * même qu'elle vient d'être écartée. Le flag de session le raconte.
          */
-        setTimeout(() => {
-            if (!this.dejaInstallee && !this.prompt) {
-                this.visible = true;
-            }
-        }, 2500);
+        try {
+            sessionStorage.setItem('cf-install-propose', '1');
+        } catch (e) {}
     },
 
     installer() {
         if (this.prompt) {
             this.prompt.prompt();
             this.prompt.userChoice.then((choix) => {
-                if (choix.outcome === 'accepted') {
-                    this.visible = false;
-                    this.etapes = false;
-                } else {
-                    this.visible = false;
-                }
+                this.masquer();
             });
 
             return;
@@ -453,7 +564,7 @@ Alpine.store('installation', {
     },
 
     fermer() {
-        this.visible = false;
+        this.masquer();
     },
 
     fermerEtapes() {
@@ -754,8 +865,16 @@ Alpine.start();
  * couvre le cas où le navigateur l'exécuterait plus tôt.
  */
 const demarrer = () => {
-    Alpine.store('notifications').demarrer();
-    Alpine.store('installation').demarrer();
+    /*
+     * Les deux stores sont indépendants : un échec de démarrage du premier
+     * (ex. DOM indisponible) ne doit jamais empêcher le rappel d'installation
+     * de s'afficher, c'est aussi lui qui signale l'application.
+     */
+    try {
+        Alpine.store('notifications').demarrer();
+    } finally {
+        Alpine.store('installation').demarrer();
+    }
 };
 
 if (document.readyState === 'loading') {

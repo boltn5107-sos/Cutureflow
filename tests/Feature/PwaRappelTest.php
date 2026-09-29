@@ -40,6 +40,13 @@ class PwaRappelTest extends TestCase
 
     public function test_le_rappel_d_installation_revient_a_chaque_ouverture_tant_que_l_application_n_est_pas_installee(): void
     {
+        // La page d'accueil, visitée par n'importe qui, propose aussi
+        // l'installation : c'est souvent le premier contact avec l'application.
+        $this->get('/')
+            ->assertOk()
+            ->assertSee('data-installation-prompt', false)
+            ->assertSee('Installer Couture Flow');
+
         $this->actingAs($this->atelier);
 
         $this->get('/tableau-de-bord')
