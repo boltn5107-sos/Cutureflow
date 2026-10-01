@@ -8,10 +8,8 @@
     @keydown.escape.window="$store.sidebar.open = false; menu = false; profil = false; notifs = false"
 >
     <a href="{{ route('dashboard') }}" class="flex items-center gap-2.5 lg:hidden">
-        <span class="flex size-9 items-center justify-center rounded-lg bg-brand-800 text-brand-50 dark:bg-brand-400 dark:text-brand-900">
-            <i class="fa-solid fa-scissors" aria-hidden="true"></i>
-        </span>
-        <span class="font-serif text-base font-semibold tracking-tight">Couture Flow</span>
+        <x-app-logo />
+        <span class="font-serif text-base font-semibold tracking-tight">Couture+</span>
     </a>
 
     <div class="hidden min-w-0 flex-1 items-center lg:flex">

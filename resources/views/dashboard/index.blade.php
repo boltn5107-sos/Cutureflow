@@ -72,7 +72,7 @@
         <i class="fa-solid fa-scissors text-brand-500" aria-hidden="true"></i>
         <div class="min-w-0 flex-1">
             <p class="text-sm font-semibold text-brand-900 dark:text-brand-100">
-                Couture Flow vous a sauvé du temps ?
+                Couture+ vous a sauvé du temps ?
             </p>
             <p class="mt-0.5 text-xs text-brand-700/80 dark:text-brand-300/80">
                 Partagez l'application à un autre atelier : ils recevront le lien.
@@ -80,8 +80,8 @@
         </div>
         <x-share-button
             class="cf-btn-secondary cf-btn-sm"
-            titre="Couture Flow — la gestion d'atelier de couture"
-            :texte="'Je utilise Couture Flow pour gérer mon atelier de couture : clients, mesures, commandes et planning au même endroit. Essayez aussi :'"
+            titre="Couture+ — la gestion d'atelier de couture"
+            :texte="'Je utilise Couture+ pour gérer mon atelier de couture : clients, mesures, commandes et planning au même endroit. Essayez aussi :'"
             :url="route('accueil')"
         />
     </div>

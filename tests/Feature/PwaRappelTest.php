@@ -45,14 +45,14 @@ class PwaRappelTest extends TestCase
         $this->get('/')
             ->assertOk()
             ->assertSee('data-installation-prompt', false)
-            ->assertSee('Installer Couture Flow');
+            ->assertSee('Installer Couture+');
 
         $this->actingAs($this->atelier);
 
         $this->get('/tableau-de-bord')
             ->assertOk()
             ->assertSee('data-installation-prompt', false)
-            ->assertSee('Installer Couture Flow');
+            ->assertSee('Installer Couture+');
 
         // Une autre page ouverte plus tard retrouve le même rappel : rien
         // n'est mémorisé d'une session à l'autre tant que ce n'est pas fait.

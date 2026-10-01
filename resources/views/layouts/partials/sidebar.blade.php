@@ -49,11 +49,9 @@
 >
     <div class="flex h-16 items-center gap-2.5 border-b border-brand-200/70 px-6 dark:border-white/10">
         <a href="{{ route('dashboard') }}" class="flex items-center gap-2.5">
-            <span class="flex size-9 items-center justify-center rounded-lg bg-brand-800 text-brand-50 dark:bg-brand-400 dark:text-brand-900">
-                <i class="fa-solid fa-scissors" aria-hidden="true"></i>
-            </span>
+            <x-app-logo />
             <span class="flex flex-col leading-none">
-                <span class="font-serif text-base font-semibold tracking-tight">Couture Flow</span>
+                <span class="font-serif text-base font-semibold tracking-tight">Couture+</span>
                 <span class="mt-0.5 truncate text-[0.65rem] font-medium tracking-wide text-brand-500 uppercase">
                     {{ auth()->user()?->displayName() ?? 'Mon atelier' }}
                 </span>

@@ -23,7 +23,7 @@ class InstallationTest extends TestCase
         $response = $this->get('/installation');
 
         $response->assertOk();
-        $response->assertSee('Installer Couture Flow', false);
+        $response->assertSee('Installer Couture+', false);
         $response->assertSee('Vérifications', false);
         $response->assertSee('Compte administrateur', false);
     }

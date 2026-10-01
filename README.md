@@ -1,4 +1,4 @@
-# Couture Flow
+# Couture+
 
 Application de gestion pour ateliers de couture : clients, commandes, mesures,
 paiements Wave, rendez-vous, modèles et dépenses.

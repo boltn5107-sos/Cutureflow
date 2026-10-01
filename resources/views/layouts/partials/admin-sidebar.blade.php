@@ -17,7 +17,7 @@
             <i class="fa-solid fa-shield-halved" aria-hidden="true"></i>
         </span>
         <span class="flex flex-col leading-none">
-            <span class="font-serif text-base font-semibold tracking-tight text-brand-50">Couture Flow</span>
+            <span class="font-serif text-base font-semibold tracking-tight text-brand-50">Couture+</span>
             <span class="mt-0.5 text-[0.65rem] font-medium tracking-wide text-brand-300 uppercase">Administration</span>
         </span>
     </div>

@@ -172,7 +172,7 @@ class NotificationEtatTest extends TestCase
             ->getContent();
 
         $this->assertStringContainsString('x-data="partage(', $html);
-        $this->assertStringContainsString('Couture Flow', $html);
+        $this->assertStringContainsString('Couture+', $html);
 
         // Les canaux sont rendus par la feuille ; les adresses, elles,
         // sont construites par le composant au moment du clic.

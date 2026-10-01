@@ -6,7 +6,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="theme-color" content="#523E1A" media="(prefers-color-scheme: light)">
     <meta name="theme-color" content="#1C1A17" media="(prefers-color-scheme: dark)">
-    <meta name="description" content="@yield('meta_description', 'Couture Flow — gestion d\'atelier de couture : clients, mesures, commandes, caisse et planning.')">
+    <meta name="description" content="@yield('meta_description', 'Couture+ — gestion d\'atelier de couture : clients, mesures, commandes, caisse et planning.')">
     <meta name="cf-vapid-public-key" content="{{ config('services.webpush.vapid.public_key', '') }}">
 
     <title>@yield('title', 'Tableau de bord') — {{ config('app.name') }}</title>

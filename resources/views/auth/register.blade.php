@@ -30,10 +30,8 @@
     <header class="sticky top-0 z-30 border-b border-brand-200/70 bg-white/85 backdrop-blur-md dark:border-white/10 dark:bg-brand-dark/85">
         <div class="mx-auto flex h-16 max-w-6xl items-center gap-4 px-4 sm:px-6">
             <a href="{{ route('accueil') }}" class="flex items-center gap-2.5">
-                <span class="flex size-9 items-center justify-center rounded-lg bg-brand-800 text-brand-50 dark:bg-brand-400 dark:text-brand-900">
-                    <i class="fa-solid fa-scissors" aria-hidden="true"></i>
-                </span>
-                <span class="font-serif text-lg font-semibold tracking-tight">Couture Flow</span>
+                <x-app-logo />
+                <span class="font-serif text-lg font-semibold tracking-tight">Couture+</span>
             </a>
 
             <div class="ml-auto flex items-center gap-2">

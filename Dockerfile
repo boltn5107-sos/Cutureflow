@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 
 # ==========================================================================
-#  Couture Flow — image de production pour Render
+#  Couture+ — image de production pour Render
 # ==========================================================================
 #  Trois étapes :
 #    1. assets  : compilation Vite / Tailwind

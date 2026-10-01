@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="theme-color" content="#523E1A">
-    <meta name="description" content="Couture Flow — le logiciel de gestion pensé pour les ateliers de couture : clients, mesures, commandes, caisse et planning.">
+    <meta name="description" content="Couture+ — le logiciel de gestion pensé pour les ateliers de couture : clients, mesures, commandes, caisse et planning.">
     <meta name="robots" content="noindex, follow">
 
     <title>{{ config('app.name') }} — Gestion d'atelier de couture</title>
@@ -47,10 +47,8 @@
     <header class="sticky top-0 z-30 border-b border-brand-200/70 bg-white/85 backdrop-blur-md dark:border-white/10 dark:bg-brand-dark/85">
         <div class="mx-auto flex h-16 max-w-6xl items-center gap-4 px-4 sm:px-6">
             <a href="{{ route('accueil') }}" class="flex items-center gap-2.5">
-                <span class="flex size-9 items-center justify-center rounded-lg bg-brand-800 text-brand-50 dark:bg-brand-400 dark:text-brand-900">
-                    <i class="fa-solid fa-scissors" aria-hidden="true"></i>
-                </span>
-                <span class="font-serif text-lg font-semibold tracking-tight">Couture Flow</span>
+                <x-app-logo />
+                <span class="font-serif text-lg font-semibold tracking-tight">Couture+</span>
             </a>
 
             <nav class="ml-auto hidden items-center gap-7 text-sm font-medium text-brand-700 md:flex dark:text-brand-200">
@@ -94,7 +92,7 @@
                     </h1>
 
                     <p class="mx-auto mt-6 max-w-xl text-base leading-relaxed text-brand-600 text-pretty sm:text-lg dark:text-brand-300">
-                        Clients, mesures, commandes, encaissements et planning. Couture Flow remplace le carnet
+                        Clients, mesures, commandes, encaissements et planning. Couture+ remplace le carnet
                         papier et les fichiers dispersés par une gestion simple et rapide, qui reste
                         utilisable avec une connexion lente.
                     </p>

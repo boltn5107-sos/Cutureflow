@@ -35,7 +35,7 @@ class PushService
             $webPush = new WebPush($this->auth(), [], 20);
 
             $payload = json_encode([
-                'title' => $donnees['title'] ?? 'Couture Flow',
+                'title' => $donnees['title'] ?? 'Couture+',
                 'message' => $donnees['message'] ?? '',
                 'icon' => $donnees['icon'] ?? '/images/icons/icon-192.png',
                 'url' => $donnees['url'] ?? '/tableau-de-bord',

@@ -1,6 +1,6 @@
 /*
  |--------------------------------------------------------------------------
- | Service worker — Couture Flow
+ | Service worker — Couture+
  |--------------------------------------------------------------------------
  | Stratégies
  |  - navigation (HTML)  : network-first, repli sur le cache hors-ligne
@@ -12,7 +12,7 @@
  |  - aucune réponse 401 / 403 / 419 / 5xx n'est stockée ni servie depuis le cache
  */
 
-const CACHE_NAME = 'coutureflow-v3';
+const CACHE_NAME = 'coutureplus-v1';
 const OFFLINE_FALLBACK = '/';
 
 const PRECACHE_URLS = [
@@ -124,7 +124,7 @@ self.addEventListener('push', (event) => {
     };
 
     event.waitUntil(
-        self.registration.showNotification(donnees.title || 'Couture Flow', options)
+        self.registration.showNotification(donnees.title || 'Couture+', options)
     );
 });
 
@@ -245,7 +245,7 @@ function offlineResponse() {
     return new Response(
         '<!doctype html><html lang="fr"><head><meta charset="utf-8">' +
         '<meta name="viewport" content="width=device-width, initial-scale=1">' +
-        '<title>Hors connexion — Couture Flow</title></head>' +
+        '<title>Hors connexion — Couture+</title></head>' +
         '<body style="font-family:system-ui,sans-serif;background:#fdfbf7;color:#382a11;padding:2.5rem;text-align:center">' +
         '<h1 style="font-size:1.25rem;margin:0 0 .5rem">Vous êtes hors connexion</h1>' +
         '<p style="font-size:.9rem;color:#6e5424;margin:0">Reconnectez-vous puis rechargez cette page.</p>' +

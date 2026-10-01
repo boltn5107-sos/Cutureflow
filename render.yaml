@@ -1,5 +1,5 @@
 # ==========================================================================
-#  Couture Flow — Render Blueprint
+#  Couture+ — Render Blueprint
 # ==========================================================================
 #  Création du service depuis l'interface Render :
 #    Blueprints > New Blueprint Instance > pointed sur ce dépôt
@@ -36,7 +36,7 @@ services:
     # ------------------------------------------------------------- variables
     envVars:
       - key: APP_NAME
-        value: "Couture Flow"
+        value: "Couture+"
       - key: APP_ENV
         value: production
       - key: APP_DEBUG
@@ -109,7 +109,7 @@ services:
       - key: MAIL_FROM_ADDRESS
         sync: false
       - key: MAIL_FROM_NAME
-        value: "Couture Flow"
+        value: "Couture+"
 
       # ------------------------------------------------------------- Wave
       - key: WAVE_PAYMENT_NUMBER

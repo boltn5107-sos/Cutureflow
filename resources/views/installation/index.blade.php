@@ -29,12 +29,10 @@
 <body class="min-h-screen bg-brand-50 font-sans text-brand-900 antialiased dark:bg-brand-dark dark:text-brand-50">
     <main class="mx-auto max-w-3xl px-4 py-10 sm:px-6 sm:py-14">
         <div class="text-center">
-            <span class="mx-auto flex size-11 items-center justify-center rounded-xl bg-brand-800 text-brand-50 dark:bg-brand-400 dark:text-brand-900">
-                <i class="fa-solid fa-scissors" aria-hidden="true"></i>
-            </span>
+            <x-app-logo size="size-11" />
 
             <h1 class="mt-5 font-serif text-3xl font-semibold tracking-tight sm:text-4xl">
-                Installer Couture Flow
+                Installer Couture+
             </h1>
 
             <p class="mx-auto mt-3 max-w-xl text-brand-600 dark:text-brand-300">
@@ -99,7 +97,7 @@
                         name="app_nom"
                         label="Nom de l'application"
                         :value="old('app_nom', config('app.name'))"
-                        placeholder="Couture Flow"
+                        placeholder="Couture+"
                         required
                     />
 

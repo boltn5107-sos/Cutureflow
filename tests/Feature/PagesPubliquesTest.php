@@ -13,7 +13,7 @@ class PagesPubliquesTest extends TestCase
     {
         $this->get('/')
             ->assertOk()
-            ->assertSee('Couture Flow', false);
+            ->assertSee('Couture+', false);
     }
 
     public function test_l_assistant_d_installation_est_inaccessible_une_fois_l_application_installee(): void

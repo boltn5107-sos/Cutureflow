@@ -1,6 +1,6 @@
 #!/bin/sh
 # ==========================================================================
-#  Point d'entrée du conteneur Couture Flow sur Render
+#  Point d'entrée du conteneur Couture+ sur Render
 # ==========================================================================
 #  Render n'exécute qu'un seul processus et fournit le port d'écoute dans la
 #  variable PORT. Ce script prépare le conteneur puis lance Nginx et PHP-FPM

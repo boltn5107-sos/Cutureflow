@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Schema;
 use Throwable;
 
 /**
- * Détermine si Couture Flow est prêt à être utilisé et réalise
+ * Détermine si Couture+ est prêt à être utilisé et réalise
  * l'installation initiale.
  *
  * L'assistant d'installation n'est accessible que tant que l'application

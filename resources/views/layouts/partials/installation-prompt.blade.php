@@ -28,7 +28,7 @@
         </span>
 
         <div class="min-w-0 flex-1">
-            <p class="text-sm font-semibold">Installer Couture Flow</p>
+            <p class="text-sm font-semibold">Installer Couture+</p>
             <p class="mt-0.5 text-xs text-brand-600 dark:text-brand-300">
                 <template x-if="$store.installation.estIOS">
                     <span>Ajoutez l'application à votre écran d'accueil pour l'ouvrir en plein écran, même hors connexion.</span>
@@ -91,7 +91,7 @@
     >
         <div class="w-full max-w-sm overflow-hidden rounded-xl border border-brand-200 bg-white shadow-elevated dark:border-white/10 dark:bg-brand-dark">
             <div class="px-6 pt-6">
-                <h3 class="font-serif text-lg font-semibold">Installer Couture Flow</h3>
+                <h3 class="font-serif text-lg font-semibold">Installer Couture+</h3>
                 <p class="mt-1.5 text-sm text-brand-600 dark:text-brand-300">
                     Ajoutez l'application à votre écran d'accueil : elle s'ouvrira comme une app à part entière.
                 </p>

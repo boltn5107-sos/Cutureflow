@@ -32,10 +32,8 @@
     <div class="flex min-h-screen flex-col">
         <header class="flex items-center justify-between gap-4 px-4 py-4 sm:px-6">
             <a href="{{ route('accueil') }}" class="flex items-center gap-2.5">
-                <span class="flex size-9 items-center justify-center rounded-lg bg-brand-800 text-brand-50 dark:bg-brand-400 dark:text-brand-900">
-                    <i class="fa-solid fa-scissors" aria-hidden="true"></i>
-                </span>
-                <span class="font-serif text-lg font-semibold tracking-tight">Couture Flow</span>
+                <x-app-logo />
+                <span class="font-serif text-lg font-semibold tracking-tight">Couture+</span>
             </a>
 
             <button

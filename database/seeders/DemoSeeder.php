@@ -202,13 +202,13 @@ class DemoSeeder extends Seeder
          * mesure reçoit l'icône correspondante dans l'interface.
          */
         $mesuresTypes = [
-            'Tour de poitrine' => 92,
-            'Tour de taille' => 74,
-            'Tour de hanches' => 98,
-            'Tour de cou' => 38,
+            'Poitrine' => 92,
+            'Taille' => 74,
+            'Hanches' => 98,
+            'Cou' => 38,
             'Longueur épaule' => 41,
-            'Longueur manche' => 58,
-            'Tour de poignet' => 17,
+            'Manche' => 58,
+            'Poignet' => 17,
             'Fourche devant' => 27,
             'Fourche dos' => 30,
         ];
@@ -233,8 +233,8 @@ class DemoSeeder extends Seeder
         // Deux mesures historiques pour illustrer l'évolution
         Mesure::create([
             'client_id' => $clients[0]->id,
-            'code' => Mesure::entreeParLibelle('Tour de taille')['code'] ?? null,
-            'libelle' => 'Tour de taille',
+            'code' => Mesure::entreeParLibelle('Taille')['code'] ?? null,
+            'libelle' => 'Taille',
             'categorie' => 'Haut du corps',
             'valeur' => 78,
             'unite' => 'cm',

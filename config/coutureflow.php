@@ -8,7 +8,7 @@ return [
     |--------------------------------------------------------------------------
     */
 
-    'name' => env('APP_NAME', 'Couture Flow'),
+    'name' => env('APP_NAME', 'Couture+'),
 
     'currency' => env('APP_CURRENCY', 'FCFA'),
 
@@ -129,24 +129,36 @@ return [
          * représente réellement, sans laisser croire à une précision
          * qu'elle n'a pas (fa-ruler-vertical ne figure pas le haut du corps).
          *
-         * Les mesures retirées du catalogue (tour de bras, tour de genou,
-         * tour de mollet) gardent leurs relevés existants : ceux-ci
-         * s'affichent encore sur la fiche du client avec une icône de repli.
+         * Plusieurs mesures partagent une même icône (poitrine et hanches,
+         * personnage pour coude/cuisse/genou…) : le libellé les distingue.
+         *
+         * Les mesures encore retirées du catalogue (carrure, chemise, veste,
+         * jupe) gardent leurs relevés existants : ceux-ci s'affichent encore
+         * sur la fiche du client avec une icône de repli.
          */
         'Haut du corps' => [
             ['code' => 'hauteur_corps', 'libelle' => 'Haut du corps', 'icone' => 'fa-ruler-combined'],
-            ['code' => 'tour_poitrine', 'libelle' => 'Tour de poitrine', 'icone' => 'fa-shirt'],
-            ['code' => 'tour_taille', 'libelle' => 'Tour de taille', 'icone' => 'fa-ellipsis-vertical'],
-            ['code' => 'tour_hanches', 'libelle' => 'Tour de hanches', 'icone' => 'fa-vest'],
-            ['code' => 'largeur_epaules', 'libelle' => 'Largeur épaules', 'icone' => 'fa-arrows-left-right'],
-            ['code' => 'tour_cou', 'libelle' => 'Tour de cou', 'icone' => 'fa-mitten'],
+            ['code' => 'tour_poitrine', 'libelle' => 'Poitrine', 'icone' => 'fa-person-dress'],
+            ['code' => 'tour_taille', 'libelle' => 'Taille', 'icone' => 'fa-ruler-horizontal'],
+            ['code' => 'tour_hanches', 'libelle' => 'Hanches', 'icone' => 'fa-person-dress'],
+            ['code' => 'largeur_epaules', 'libelle' => 'Épaules', 'icone' => 'fa-arrows-left-right'],
+            ['code' => 'tour_bras', 'libelle' => 'Bras', 'icone' => 'fa-child-reaching'],
+            ['code' => 'longueur_manche', 'libelle' => 'Manche', 'icone' => 'fa-ruler-vertical'],
+            ['code' => 'tour_cou', 'libelle' => 'Cou', 'icone' => 'fa-circle-user'],
+            ['code' => 'tour_poignet', 'libelle' => 'Poignet', 'icone' => 'fa-hand'],
+            ['code' => 'tour_coude', 'libelle' => 'Coude', 'icone' => 'fa-person'],
             ['code' => 'longueur_epaule', 'libelle' => 'Longueur épaule', 'icone' => 'fa-ruler-horizontal'],
-            ['code' => 'longueur_manche', 'libelle' => 'Longueur manche', 'icone' => 'fa-tshirt'],
-            ['code' => 'tour_poignet', 'libelle' => 'Tour de poignet', 'icone' => 'fa-hand'],
         ],
         'Bas du corps' => [
             ['code' => 'fourche_devant', 'libelle' => 'Fourche devant', 'icone' => 'fa-angle-down'],
             ['code' => 'fourche_dos', 'libelle' => 'Fourche dos', 'icone' => 'fa-angle-up'],
+            ['code' => 'tour_cuisse', 'libelle' => 'Cuisse', 'icone' => 'fa-person'],
+            ['code' => 'tour_genou', 'libelle' => 'Genou', 'icone' => 'fa-person'],
+            ['code' => 'tour_mollet', 'libelle' => 'Mollet', 'icone' => 'fa-person-walking'],
+            ['code' => 'tour_cheville', 'libelle' => 'Cheville', 'icone' => 'fa-shoe-prints'],
+            ['code' => 'entrejambe', 'libelle' => 'Entrejambe', 'icone' => 'fa-arrows-up-down'],
+            ['code' => 'longueur_pantalon', 'libelle' => 'Longueur pantalon', 'icone' => 'fa-ruler-vertical'],
+            ['code' => 'longueur_robe', 'libelle' => 'Longueur robe', 'icone' => 'fa-ruler-vertical'],
         ],
     ],
 

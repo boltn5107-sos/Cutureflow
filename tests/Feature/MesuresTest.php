@@ -118,10 +118,10 @@ class MesuresTest extends TestCase
         $this->assertStringContainsString('Relevé du '.now()->subWeek()->format('d/m/Y'), $html);
 
         // Chaque carte porte ses propres mesures.
-        $this->assertStringContainsString('Tour de poitrine', $html);
+        $this->assertStringContainsString('Poitrine', $html);
         $this->assertStringContainsString('92', $html);
         $this->assertStringContainsString('Fourche devant', $html);
-        $this->assertStringContainsString('Tour de taille', $html);
+        $this->assertStringContainsString('Taille', $html);
         $this->assertStringContainsString('74', $html);
     }
 
@@ -165,28 +165,28 @@ class MesuresTest extends TestCase
     {
         /*
          * Retirer une mesure du catalogue ne doit pas effacer l'historique :
-         * un atelier qui a noté un tour de mollet doit continuer à le lire sur
+         * un atelier qui a noté une longueur de veste doit continuer à la lire sur
          * la fiche, avec une icône générique.
          */
         Mesure::create([
             'client_id' => $this->client->id,
-            'code' => 'tour_mollet',
-            'libelle' => 'Tour de mollet',
-            'categorie' => 'Bas du corps',
-            'valeur' => 36,
+            'code' => 'longueur_veste',
+            'libelle' => 'Longueur veste',
+            'categorie' => 'Haut du corps',
+            'valeur' => 68,
             'unite' => 'cm',
             'date_mesure' => now()->toDateString(),
         ]);
 
-        $releve = Mesure::where('code', 'tour_mollet')->firstOrFail();
+        $releve = Mesure::where('code', 'longueur_veste')->firstOrFail();
 
         $html = (string) $this->actingAs($this->atelier)
             ->get(route('clients.show', $this->client))
             ->assertOk()
             ->getContent();
 
-        $this->assertStringContainsString('Tour de mollet', $html);
-        $this->assertStringContainsString('36', $html);
+        $this->assertStringContainsString('Longueur veste', $html);
+        $this->assertStringContainsString('68', $html);
 
         // Le code n'est plus au catalogue : icone() doit retomber sur son
         // repli, sans laisser la tuile vide.
@@ -351,7 +351,7 @@ class MesuresTest extends TestCase
         );
 
         // Chaque carte détaille ses mesures.
-        $this->assertStringContainsString('Tour de poitrine', $html);
+        $this->assertStringContainsString('Poitrine', $html);
         $this->assertStringContainsString('92 cm', $html);
         $this->assertStringContainsString('Fourche devant', $html);
         $this->assertStringContainsString('27 cm', $html);
@@ -446,7 +446,10 @@ class MesuresTest extends TestCase
         $this->assertSame(count(Mesure::catalogueParCode()), $total);
         $this->assertSame($codes, array_unique($codes));
         $this->assertSame($libelles, array_unique($libelles));
-        $this->assertSame($icones, array_unique($icones));
+
+        // Des icônes sont partagées à dessein (poitrine/hanches, coude/cuisse/
+        // genou, manche/longueurs) : le libellé les distingue.
+        $this->assertNotEmpty($icones);
     }
 
     public function test_les_mesures_selectionnees_sont_enregistrees_avec_leur_code_et_leur_zone(): void
@@ -466,7 +469,7 @@ class MesuresTest extends TestCase
         $this->assertDatabaseHas('mesures', [
             'client_id' => $this->client->id,
             'code' => 'tour_poitrine',
-            'libelle' => 'Tour de poitrine',
+            'libelle' => 'Poitrine',
             'categorie' => 'Haut du corps',
             'unite' => 'cm',
         ]);
@@ -489,35 +492,38 @@ class MesuresTest extends TestCase
          */
         $retirees = [
             'carrure',
-            'tour_cheville',
-            'tour_cuisse',
             'longueur_chemise',
             'longueur_veste',
-            'longueur_robe',
             'longueur_jupe',
-            'longueur_pantalon',
-            'entrejambe',
-            'tour_bras',
-            'tour_genou',
-            'tour_mollet',
         ];
 
         foreach ($retirees as $code) {
             $this->assertNotContains($code, $codes);
         }
 
+        // Bras, coude, cuisse, genou, mollet, cheville, entrejambe et les
+        // longueurs pantalon/robe ont été remis au catalogue avec leurs icônes.
         $this->assertSame([
             'hauteur_corps',
             'tour_poitrine',
             'tour_taille',
             'tour_hanches',
             'largeur_epaules',
-            'tour_cou',
-            'longueur_epaule',
+            'tour_bras',
             'longueur_manche',
+            'tour_cou',
             'tour_poignet',
+            'tour_coude',
+            'longueur_epaule',
             'fourche_devant',
             'fourche_dos',
+            'tour_cuisse',
+            'tour_genou',
+            'tour_mollet',
+            'tour_cheville',
+            'entrejambe',
+            'longueur_pantalon',
+            'longueur_robe',
         ], $codes);
     }
 
@@ -558,7 +564,7 @@ class MesuresTest extends TestCase
 
         $this->assertDatabaseHas('mesures', [
             'code' => 'tour_poitrine',
-            'libelle' => 'Tour de poitrine',
+            'libelle' => 'Poitrine',
             'categorie' => 'Haut du corps',
         ]);
 
@@ -703,7 +709,7 @@ class MesuresTest extends TestCase
         $this->assertDatabaseHas('mesures', [
             'id' => $mesure->id,
             'code' => 'tour_hanches',
-            'libelle' => 'Tour de hanches',
+            'libelle' => 'Hanches',
             'categorie' => 'Haut du corps',
             'valeur' => 98,
         ]);
@@ -746,9 +752,9 @@ class MesuresTest extends TestCase
 
         $this->assertSame(Mesure::ICONE_REPLI, $mesure->icone());
 
-        $connue = new Mesure(['code' => 'tour_poitrine', 'libelle' => 'Tour de poitrine']);
+        $connue = new Mesure(['code' => 'tour_poitrine', 'libelle' => 'Poitrine']);
 
-        $this->assertSame('fa-shirt', $connue->icone());
+        $this->assertSame('fa-person-dress', $connue->icone());
     }
 
     public function test_un_atelier_ne_peut_pas_ecrire_dans_les_mesures_d_un_autre(): void
