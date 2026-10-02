@@ -12,6 +12,20 @@
     <link rel="manifest" href="/manifest.json">
     <link rel="icon" href="/images/icons/favicon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="/images/icons/icon-192.png">
+
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="{{ config('app.name') }}">
+    <meta property="og:title" content="{{ config('app.name') }} — Gestion d'atelier de couture">
+    <meta property="og:description" content="{{ config('app.name') }} — le logiciel de gestion pensé pour les ateliers de couture : clients, mesures, commandes, caisse et planning.">
+    <meta property="og:image" content="{{ url('/images/icons/icon-512.png') }}">
+    <meta property="og:image:width" content="512">
+    <meta property="og:image:height" content="512">
+    <meta property="og:image:alt" content="Logo {{ config('app.name') }}">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="{{ config('app.name') }} — Gestion d'atelier de couture">
+    <meta name="twitter:description" content="{{ config('app.name') }} — le logiciel de gestion pensé pour les ateliers de couture : clients, mesures, commandes, caisse et planning.">
+    <meta name="twitter:image" content="{{ url('/images/icons/icon-512.png') }}">
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 

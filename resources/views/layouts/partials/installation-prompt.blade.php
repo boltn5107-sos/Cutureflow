@@ -23,8 +23,14 @@
     data-installation-prompt
 >
     <div class="flex items-start gap-3 p-4">
-        <span class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-brand-100 text-brand-700 dark:bg-white/10 dark:text-brand-200">
-            <i class="fa-solid fa-mobile-screen" aria-hidden="true"></i>
+        <span class="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-brand-100 dark:bg-white/10">
+            <img
+                src="/images/icons/favicon.svg"
+                alt="Logo {{ config('app.name') }}"
+                class="h-7 w-auto object-contain"
+                width="82"
+                height="61"
+            >
         </span>
 
         <div class="min-w-0 flex-1">
