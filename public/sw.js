@@ -12,7 +12,7 @@
  |  - aucune réponse 401 / 403 / 419 / 5xx n'est stockée ni servie depuis le cache
  */
 
-const CACHE_NAME = 'coutureplus-v2';
+const CACHE_NAME = 'coutureplus-v3';
 const OFFLINE_FALLBACK = '/';
 
 const PRECACHE_URLS = [
